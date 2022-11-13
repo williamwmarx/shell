@@ -1,0 +1,49 @@
+#!/usr/bin/env zsh
+################################################################################
+# Information
+################################################################################
+# Maintained by William W. Marx (oss@t3.atemp.studio)
+# 🄯 Copyleft 2022, All Wrongs Reserved
+# https://github.com/williamwmarx/.dotfiles
+
+# ---------------------------------- System -----------------------------------
+# Enable `open`, `pbcopy`, and `pbpaste` commands to work across macOS, Linux, and WSL
+if [ ! $(uname -s) = "Darwin" ]; then
+	alias pbcopy="xsel --clipboard --input"
+	alias pbpaste="xsel --clipboard --output"
+	if grep -q Microsoft /proc/version; then  # WSL
+		alias open="explorer.exe";  
+	else  # Non-WSL Linux
+		alias open="xdg-open";
+	fi
+fi
+
+# If `exa` is instaled, use it instead of `ls` and `tree`
+if [ $(which exa &>/dev/null && echo "$?") -eq 0 ]; then
+	alias ls="exa"
+	alias tree="exa -T"
+fi
+
+alias o="open ."  # Open current directory in system file manager
+alias pfkill="ps aux | fzf | awk '{print $2}'"  # Kind of like pkill, but using fzf
+
+# --------------------------------- Navigation --------------------------------
+alias ds="cd ~/Desktop"
+alias dc="cd ~/Documents"
+alias dl="cd ~/Downloads"
+
+# ------------------------------------ tmux -----------------------------------
+alias tmcp="tmux save-buffer - | pbcopy"  # Copy tmux buffer into system clipboard
+
+# ------------------------------------ Misc -----------------------------------
+alias expandurl="curl -sIL $1 | rg -Po \"(?<=location: ).+\" | tail -1"
+
+# ------------------------------- macOS Specific ------------------------------
+if [ $(uname -s) = "Darwin" ]; then
+	if [ $(uname -m) = "arm64" ]; then
+		alias d64-run="arch -x86_64 docker run --platform linux/amd64"  # Docker x86_64 images on M1
+	fi
+	alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+	alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+	alias afk="pmset displaysleepnow"  # Lock display
+fi
