@@ -1,2 +1,10 @@
 [init]
 	defaultBranch = main
+
+[user]
+	email = m94@marx.sh
+	name = William W. Marx
+	signingkey = C97084827DFFF57E
+
+[commit]
+	gpgSign = true
