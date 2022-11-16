@@ -109,6 +109,7 @@ if [ `uname` = "Darwin" ]; then
 
 	# Install Vim plugins
 	vim -c "PlugInstall" -c "q" -c "q"
+	vim -c "CocInstall coc-html coc-css coc-tsserver coc-pyright coc-rust-analyzer coc-json coc-docker" -c ":q" -c ":q"
 
 	# Open Terminal theme
 	# Need a more elegant solution here
