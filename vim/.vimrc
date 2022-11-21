@@ -110,6 +110,7 @@ set noshowmode	"Mode already handled in statusline
 " ------------------------------ Leader Mappings -----------------------------
 nmap <leader>p "+p|  "Paste from system clipboard
 nmap <leader>l :set list!<CR>|	"Toggle listing whitespace chars
+nmap <leader>g :GitGutterToggle<CR>|  "Open netrw file browser in current file directory
 nmap <leader>s :s/\s\+$//e<CR>|  "Remove trailing white spaces in line
 nmap <leader>S :%s/\s\+$//e<CR>|	"Remove all trailing white spaces in buffer
 nmap <leader>f :Lexplore %:p:h<CR>|  "Open netrw file browser in current file directory
