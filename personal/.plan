@@ -7,3 +7,7 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 * Help myself and others better understand the nuanced, complex world we live in
 * Investigate the learned biases of ML models and craft their solutions
 * Clarify and model the state of labor in America
+% Rework personal website
+	+ Added new simplified home page
+	+ Added more extensive contact page
+	+ Ported styling to SCSS to make it more manageable
