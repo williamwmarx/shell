@@ -11,3 +11,5 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 	+ Added new simplified home page
 	+ Added more extensive contact page
 	+ Ported styling to SCSS to make it more manageable
+	+ Ported JS into typescript
+	+ Added minification/uglification to css/js for smaller file sizes
