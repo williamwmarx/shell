@@ -6,10 +6,6 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 * Build empathic machine general intelligence
 * Help myself and others better understand the nuanced, complex world we live in
 * Investigate the learned biases of ML models and craft their solutions
+	+ Submitted "Improving placebo selection in survey experiments" research article to PLOS One
 * Clarify and model the state of labor in America
 % Rework personal website
-	+ Implemented GPG encryption page
-	& Need to find a good bundler, webpack looks ultra annoying for this rather simple project
-	  preact looks promising, I'll try it out tomorrow
-
-HAPPY THANKSGIVING 🦃✨
