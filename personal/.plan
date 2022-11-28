@@ -5,11 +5,9 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 
 * Build empathic machine general intelligence
 * Help myself and others better understand the nuanced, complex world we live in
+	+ Started scaffolding on cloudburst, an attempt to do web scraping the right way
+	  & This is my first foray into Go, quite excited
 * Investigate the learned biases of ML models and craft their solutions
 * Clarify and model the state of labor in America
 % Rework personal website
-	+ Got GPG encryption working
-	+ Got preact + TS + SCSS mostly working, but had some problems with font files loading so stashed
-	  for later
-	+ Edited copy and added pages to new simplified design branch... basically just need to refine
-	  copy more and work on mobile styling tomorrow
+	+ Merged new simplified design into site repo (now live @ https://marx.sh)
