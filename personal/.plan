@@ -3,11 +3,14 @@ This is my daily work, these are the projects I'm working on...
 The long-term, more extensive projects are denoted by *'s, shorter term ones are denoted by %'s.
 When I accomplish something of note, I write a + line. These lines are reset daily.
 
+Shit. Already messed up the "update this once a day thing". Hopefully that won't happen again.
+
 * Build empathic machine general intelligence
 * Help myself and others better understand the nuanced, complex world we live in
-	+ Started scaffolding on cloudburst, an attempt to do web scraping the right way
-	  & This is my first foray into Go, quite excited
+	+ Wrote a Twitter scraper that doesn't use the developer API, so no limits
+	  & Trying to scarpe all o  Elon's tweets to understand his shift in amplifying far-right 
+		  Voices since his Twitter acquisition
+	+ Gathered and analyzed 6 months of Elon's tweets
+	+ Now gathering and analyzing the tweets of those he has interacted with
 * Investigate the learned biases of ML models and craft their solutions
 * Clarify and model the state of labor in America
-% Rework personal website
-	+ Merged new simplified design into site repo (now live @ https://marx.sh)
