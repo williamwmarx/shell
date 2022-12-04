@@ -5,7 +5,7 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 
 * Build empathic machine general intelligence
 * Help myself and others better understand the nuanced, complex world we live in
-	+ Started writing backgroudn on Elon's acquisition of Twitter
-	  & Lots of reading/research
+	+ Began porting code over to Go. Goal is to be able to make a bunch of concurrent requests and
+	  parse all responses. JSON in Go is not super easy
 * Investigate the learned biases of ML models and craft their solutions
 * Clarify and model the state of labor in America
