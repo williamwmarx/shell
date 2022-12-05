@@ -1,4 +1,4 @@
-# .dotfiles
+# .iaj
 My personal dotfiles and install script.
 
 ## Install 🚀
