@@ -1,4 +1,4 @@
-# 🐚 shell
+# shell 🐚
 My personal dotfiles and install script.
 
 ## Install 🚀
