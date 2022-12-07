@@ -8,7 +8,9 @@ When I accomplish something of note, I write a + line. These lines are reset dai
 * Investigate the learned biases of ML models and craft their solutions
 * Clarify and model the state of labor in America
 
+% marx.sh
+	+ Simplified, this site shouldn't really be a big deal, atemp.studio should
 % A-TEMP® Website
-	+ Reworked infrastructure to Cloudflare + AWS S3 + Notion
-% CWDT Website
-	+ Reworked infrastructure to Cloudflare + AWS S3 + Notion
+	+ Added S3 component, moved main page from marx.sh
+	+ Finally got the hang of webpack/github workflows, that was admittedly nice
+	+ Changed primary shopify domain to gallery.atemp.studio
