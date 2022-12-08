@@ -9,18 +9,19 @@ import (
 
 // Download a file from this repo to a given path
 func download(url_path, write_path string) {
+	// Get request
 	url = "https://raw.githubusercontent.com/williamwmarx/shell/main/" + url_path
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// Read text from body
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// Write file to disk
 	ioutil.WriteFile(write_path, []byte(body), 0644)
 }
 
