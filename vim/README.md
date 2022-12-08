@@ -40,4 +40,4 @@ The leader key is `\`. These only work in Vim's normal mode.
 ## Theme 🎨
 [Vim Code Dark](https://github.com/tomasiser/vim-code-dark) is a nice VS-Code-like colorscheme. Additionally, this config has a nice, minimal status line showing the currne toprating mode, buffer number, filename, git branch, type of file in the buffer, line number and column number of cursor, percent of the way through the file the cursor is at, total line count, and the file size of the buffer.
 
-![Zsh Theme Preview](../assets/VimPreview.png)
+<img src="../assets/VimPreview.png" alt="Vim Preview" width="80%"/>
