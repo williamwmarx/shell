@@ -41,4 +41,4 @@ There’s not much to my default Zsh theme — just a simple left prompt showing
 
 The below image additionally shows off the usefullness of [Zsh syntax highlighting](https://github.com/zsh-users/zsh-syntax-highlighting).
 
-![Zsh Theme Preview](../assets/ZshThemePreview.png)
+<img src="../assets/ZshThemePreview.png" alt="Zsh Theme Preview" width="80%"/>
