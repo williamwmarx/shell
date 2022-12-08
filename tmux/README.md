@@ -30,4 +30,4 @@ Like the Vim and Zsh themes, only what's necessary is shown. The theme itself is
 
 The bottom bar shows the session name, all open windows, the current username and hostname, and the date and time. The name of each window follows the format `window_number:process_name`. If a window is active, it's format is `window_number[pane_number]:process_name`.
 
-<img src="../assets/TmuxPreview.png" alt="Tmux Preview" width="80%"/>
+<img src="../assets/TmuxThemePreview.png" alt="Tmux Preview" width="80%"/>
