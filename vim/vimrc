@@ -3,7 +3,7 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "Maintained by William W. Marx (m94@marx.sh)
 "🄯 Copyleft 2022, All Wrongs Reserved
-"https://github.com/williamwmarx/.dotfiles
+"https://github.com/williamwmarx/shell
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " General
@@ -53,7 +53,6 @@ set background=dark  "Ensure dark background
 syntax on  "Synatx highlighting
 set hlsearch	"Highlight search results
 set number relativenumber  "Turn on relative line numbers
-set list	"Show whitespace characters
 set listchars=eol:$,tab:>-,space:·	"Add tab to list of displayed chars
 set showcmd  "Show commands
 set splitright	"Split vertical windows to the right
@@ -62,6 +61,7 @@ set colorcolumn=+1	"Put a vertical bar one char past texwidth
 let g:netrw_banner=0	"Get rid of netrw banner
 let g:netrw_liststyle=3  "Tree style directory listing
 let g:netrw_winsize = 30	"Netrw takes up only 30% of the window
+let g:gitgutter_enabled = 0	"Disable gitgutter on load (alters syntax highlighting)
 
 " --------------------------------- Functions ---------------------------------
 func CleanRegs()
@@ -110,15 +110,15 @@ set noshowmode	"Mode already handled in statusline
 " ------------------------------ Leader Mappings -----------------------------
 nmap <leader>p "+p|  "Paste from system clipboard
 nmap <leader>l :set list!<CR>|	"Toggle listing whitespace chars
-nmap <leader>g :GitGutterToggle<CR>|  "Open netrw file browser in current file directory
 nmap <leader>s :s/\s\+$//e<CR>|  "Remove trailing white spaces in line
 nmap <leader>S :%s/\s\+$//e<CR>|	"Remove all trailing white spaces in buffer
 nmap <leader>f :Lexplore %:p:h<CR>|  "Open netrw file browser in current file directory
 nmap <leader>F :Lexplore <CR>|	"Open netrw file browser in the home directory
 nmap <leader>ff :Files<CR>|  "Fuzzy find files
 nmap <leader>FF :Files $HOME<CR>|  "Fuzzy find files
+nmap <leader>g :GitGutterToggle<CR>|  "Open netrw file browser in current file directory
 nmap <leader>v :source $MYVIMRC<CR>|	"Source this .vimrc
-nmap <leader>c :FormatLines<CR>|	"Format lines of code with google/vim-codefmt
+nmap <leader>c :FormatLines<CR>	"Format lines of code with google/vim-codefmt
 nmap <leader>C :FormatCode<CR>|  "Format entire buffer with google/vim-codefmt
 
 augroup run_code
@@ -169,17 +169,18 @@ Plug 'tpope/vim-repeat'  "Repeat compatability with vim surround
 Plug 'michaeljsmith/vim-indent-object'	"Indentation as a text object
 Plug 'junegunn/fzf', { 'do': { -> fzf#install()  }	}  "Fuzzy finder install
 Plug 'junegunn/fzf.vim'  "Fuzzy finder
-Plug 'arzg/vim-colors-xcode'	"XCode colorscheme
+Plug 'tomasiser/vim-code-dark'  "VS Code colorscheme
 Plug 'ap/vim-css-color'  "CSS Color highlighter
 Plug 'google/vim-maktaba'  "Dependency of google/vim-codefmt
 Plug 'google/vim-codefmt'  "Auto-format code
 Plug 'google/vim-glaive'	"Dependency of google/vim-codefmt
 Plug 'neoclide/coc.nvim', {'branch': 'release'}  "Code completion
 Plug 'airblade/vim-gitgutter'  "Git status in the gutter
+Plug 'Yggdroot/indentLine'  "Vertical indent lines
 call plug#end()
 
 " -------------------------- Plugin-Specific Settings -------------------------
-colorscheme xcodedarkhc  "https://github.com/arzg/vim-colors-xcode (high contrast)
+colorscheme codedark  "VSCode-like colorscheme
 
 " ------------------------------- Code Completion -----------------------------
 "Tab trigger completion

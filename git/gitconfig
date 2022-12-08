@@ -8,3 +8,15 @@
 
 [commit]
 	gpgSign = true
+
+[url "https://github.com/"]
+	insteadOf = "gh:"
+
+[url "https://github.com/williamwmarx/"]
+	insteadOf = "wwm:"
+
+[url "https://github.com/atemp-studio/"]
+	insteadOf = "t3:"
+
+[url "https://github.com/cwdt-us/"]
+	insteadOf = "cwdt:"

@@ -3,7 +3,7 @@
 ################################################################################
 # Maintained by William W. Marx (oss@t3.atemp.studio)
 # 🄯 Copyleft 2022, All Wrongs Reserved
-# https://github.com/williamwmarx/.dotfiles
+# https://github.com/williamwmarx/shell
 
 ### Git [±master ▾●]
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[green]%}±%{$reset_color%}%{$fg_bold[white]%}"
