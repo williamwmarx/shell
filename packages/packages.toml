@@ -1,0 +1,166 @@
+# Core packages
+[[core]]
+name = "Core"
+description = "Packages used daily"
+
+[core.bat]
+name = "bat"
+apt_name = "bat"
+brew_name = "bat"
+dnf_name = "bat"
+pacman_name = "bat"
+
+[core.curl]
+name = "cURL"
+apt_name = "curl"
+brew_name = "curl"
+dnf_name = "curl"
+pacman_name = "curl"
+
+[core.exa]
+name = "exa"
+apt_name = "exa"
+brew_name = "exa"
+dnf_name = "exa"
+pacman_name = "exa"
+
+[core.fd]
+name = "fd"
+apt_name = "fd-find"
+brew_name = "fd"
+dnf_name = "fd-find"
+pacman_name = "fd"
+
+[core.fzf]
+name = "fzf"
+apt_name = "fzf"
+brew_name = "fzf"
+dnf_name = "fzf"
+pacman_name = "fzf"
+
+[core.git]
+name = "git"
+apt_name = "git"
+brew_name = "git"
+dnf_name = "git"
+pacman_name = "git"
+
+[core.gnupg]
+name = "GnuPG"
+apt_name = "gnupg"
+brew_name = "gnupg"
+dnf_name = "gnupg"
+pacman_name = "gnupg"
+
+[core.openssl]
+name = "OpenSSL"
+apt_name = "openssl"
+brew_name = "openssl"
+dnf_name = "openssl"
+pacman_name = "openssl"
+
+[core.ripgrep]
+name = "ripgrep"
+apt_name = "ripgrep"
+brew_name = "ripgrep"
+dnf_name = "ripgrep"
+pacman_name = "ripgrep"
+
+[core.tmux]
+name = "tmux"
+apt_name = "tmux"
+brew_name = "tmux"
+dnf_name = "tmux"
+pacman_name = "tmux"
+
+[core.vim]
+name = "Vim"
+apt_name = "vim"
+brew_name = "vim"
+dnf_name = "vim"
+pacman_name = "vim"
+
+[core.zsh]
+name = "Zsh"
+apt_name = "zsh"
+brew_name = "zsh"
+dnf_name = "zsh"
+pacman_name = "zsh"
+
+# Design packages
+[[design]]
+name = "Design"
+description = "Media/design packages"
+
+[design.ffmpeg]
+name = "FFmpeg"
+apt_name = "ffmpeg"
+brew_name = "ffmpeg"
+dnf_name = "ffmpeg-free"
+pacman_name = "ffmpeg"
+
+# GUI Core apps
+[[gui_core]]
+name = "GUI Core"
+description = "GUI apps I use frequently/daily"
+
+[gui_core.clean_my_mac]
+name = "Clean My Mac"
+brew_cask_name = "cleanmymac"
+
+[gui_core.dropbox]
+name = "Dropbox"
+brew_cask_name = "dropbox"
+
+[gui_core.docker]
+name = "Docker Desktop"
+brew_cask_name = "docker"
+
+[gui_core.iina]
+name = "IINA"
+brew_cask_name = "iina"
+
+[gui_core.iterm2]
+name = "iTerm2"
+brew_cask_name = "iterm2"
+
+[gui_core.little_snitch]
+name = "Little Snitch"
+brew_cask_name = "little-snitch"
+
+[gui_core.mullvad]
+name = "Mullvad VPN"
+brew_cask_name = "mullvadvpn"
+
+[gui_core.parallels]
+name = "Parallels Desktop"
+brew_cask_name = "parallels"
+
+[gui_core.raycast]
+name = "Raycast"
+brew_cask_name = "raycast"
+
+[gui_core.zoom]
+name = "Zoom"
+brew_cask_name = "zoomus"
+
+# GUI Design apps
+[[gui_design]]
+name = "GUI Design"
+description = "GUI apps I use for media/design work"
+
+[gui_design.adobe_cc]
+name = "Adobe Creative Cloud"
+brew_cask_name = "adobe-creative-cloud"
+
+[gui_design.glyphs]
+name = "Glyphs"
+brew_cask_name = "glyphs"
+
+[gui_design.rhino3d]
+name = "Rhino 3D"
+brew_cask_name = "rhino"
+
+[gui_design.max_msp]
+name = "Cycling ’74 Max/MSP"
+brew_cask_name = "cycling74-max"
