@@ -16,11 +16,10 @@ type Options struct {
 }
 
 func runRoot(options Options) {
-	// Track whether any flags found
-	flagsPresent := false
+	// Add actions
+	actions := []action{}
 	// Install tmux?
 	if options.tmux {
-		flagsPresent = true
 		if options.tmp {
 			fmt.Println("Temporarily install tmux")
 		} else {
@@ -29,22 +28,18 @@ func runRoot(options Options) {
 	}
 	// Install vim?
 	if options.vim {
-		flagsPresent = true
 		if options.tmp {
 			fmt.Println("Temporarily install vim")
 		} else {
 			fmt.Println("Install vim")
 		}
 	}
-	// Install vim?
+	// Install zsh?
 	if options.zsh {
-		flagsPresent = true
-		installZsh(options.tmp)
+		actions = append(actions, action{"zsh", blankFunc})
 	}
-	// No flags found, launch TUI list selector, where we can choose our options
-	if !flagsPresent {
-		tui_list()
-	}
+	// Launch TUI
+	tui(actions, options.tmp)
 }
 
 func flagPresent(cmd *cobra.Command, flagName string) bool {

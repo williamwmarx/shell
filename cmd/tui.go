@@ -58,12 +58,13 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type model struct {
-	list     list.Model
-	actions  []action
-	index    int
-	spinner  spinner.Model
-	done     bool
-	quitting bool
+	list             list.Model
+	actions          []action
+	index            int
+	spinner          spinner.Model
+	firstFlagInstall bool
+	done             bool
+	quitting         bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -80,10 +81,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if len(m.actions) == 1 {
-		return updateChoices(msg, m)
+	if len(m.actions) > 1 {
+		if m.firstFlagInstall {
+			m.firstFlagInstall = false
+			return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
+		}
+		return updateChosen(msg, m)
 	}
-	return updateChosen(msg, m)
+	return updateChoices(msg, m)
 }
 
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
@@ -119,7 +124,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case installedPkgMsg:
+	case completedActionsMsg:
 		if m.index >= len(m.actions)-1 {
 			m.done = true
 			return m, tea.Quit
@@ -142,10 +147,10 @@ func (m model) View() string {
 	if m.quitting {
 		return quitTextStyle.Render("Cancelling configuration 😔")
 	}
-	if len(m.actions) == 1 {
-		return choicesView(m)
+	if len(m.actions) > 1 {
+		return chosenView(m)
 	}
-	return chosenView(m)
+	return choicesView(m)
 }
 
 func choicesView(m model) string {
@@ -154,26 +159,28 @@ func choicesView(m model) string {
 
 func chosenView(m model) string {
 	if m.done {
-		doneMsg := fmt.Sprintf("Done! Installed %d actions.", len(m.actions)-1)
-		return quitTextStyle.Render(doneMsg)
+		return quitTextStyle.Render("All tasks complete 😊")
 	}
 
 	info := currentActionStyle.Render("Installing " + m.actions[m.index].name)
 
 	return fmt.Sprintf("%s%s (%d/%d)", m.spinner.View(), info, m.index, len(m.actions)-1)
-	
 }
 
-type installedPkgMsg string
+type completedActionsMsg string
 
 func downloadAndInstall(a action) tea.Cmd {
 	return tea.Tick(time.Millisecond*0, func(t time.Time) tea.Msg {
 		a.fn(false)
-		return installedPkgMsg(a.name)
+		return completedActionsMsg(a.name)
 	})
 }
 
-func tui_list() {
+func tui(actions []action, temporaryInstall bool) {
+	actions = append([]action{action{"", blankFunc}}, actions...)
+
+	fmt.Println(temporaryInstall)
+
 	items := []list.Item{
 		item("Full shell config"),
 		item("Zsh/Oh My Zsh config"),
@@ -195,7 +202,7 @@ func tui_list() {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Bold(true)
 
-	m := model{list: l, spinner: s, actions: []action{action{"", blankFunc}}}
+	m := model{list: l, spinner: s, actions: actions, firstFlagInstall: len(actions) > 1}
 
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fmt.Println("Error running program:", err)
