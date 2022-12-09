@@ -39,15 +39,11 @@ func runRoot(options Options) {
 	// Install vim?
 	if options.zsh {
 		flagsPresent = true
-			fmt.Println("Temporarily install zsh")
-		if options.tmp {
-		} else {
-			fmt.Println("Install zsh")
-		}
+		installZsh(options.tmp)
 	}
-	// No flags found, launch TUI
+	// No flags found, launch TUI list selector, where we can choose our options
 	if !flagsPresent {
-		tui()
+		tui_list()
 	}
 }
 
