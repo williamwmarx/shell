@@ -101,7 +101,7 @@ func (m model) View() string {
 
 func main() {
 	var tmux, vim, zsh, tmp bool
-	flag.BoolVar(&tmp, "tmp", false, "Install config in ~/.dotfiles.tmp?")
+	flag.BoolVar(&tmp, "tmp", false, "Install config in ~/.shell.tmp?")
 	flag.BoolVar(&tmux, "tmux", false, "Install tmux?")
 	flag.BoolVar(&vim, "vim", false, "Install vim?")
 	flag.BoolVar(&zsh, "zsh", false, "Install zsh?")
