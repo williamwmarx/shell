@@ -1,7 +1,6 @@
-package main
+package cmd
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -99,49 +98,28 @@ func (m model) View() string {
 	return "\n" + m.list.View()
 }
 
-func main() {
-	var tmux, vim, zsh, tmp bool
-	flag.BoolVar(&tmp, "tmp", false, "Install config in ~/.shell.tmp?")
-	flag.BoolVar(&tmux, "tmux", false, "Install tmux?")
-	flag.BoolVar(&vim, "vim", false, "Install vim?")
-	flag.BoolVar(&zsh, "zsh", false, "Install zsh?")
-	flag.Parse()
-
-	if tmux || vim || zsh {
-		if tmp {
-			if tmux { TmpTmux() }
-			if vim { TmpVim() }
-			if vim { TmpZsh() }
-		} else {
-			if tmux { Tmux() }
-			if vim { Vim() }
-			if vim { Zsh() }
-		}
+func tui() {
+	items := []list.Item{
+		item("Full shell config"),
+		item("Zsh/Oh My Zsh config"),
+		item("Vim + plugins config"),
+		item("tmux config"),
+		item("[TMP] Zsh config (no plugins)"),
+		item("[TMP] Vim config (no plugins)"),
 	}
 
-	if !(tmux || vim || zsh) {
-		items := []list.Item{
-			item("Full shell config"),
-			item("Zsh/Oh My Zsh config"),
-			item("Vim + plugins config"),
-			item("tmux config"),
-			item("[TMP] Zsh config (no plugins)"),
-			item("[TMP] Vim config (no plugins)"),
-		}
+	l := list.New(items, itemDelegate{}, 25, 14)
+	l.Title = "Hi 👋 Let's set up your shell"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(false)
+	l.Styles.Title = titleStyle
+	l.Styles.PaginationStyle = paginationStyle
+	l.Styles.HelpStyle = helpStyle
 
-		l := list.New(items, itemDelegate{}, 25, 14)
-		l.Title = "Hi 👋 Let's set up your shell 🐚✨"
-		l.SetShowStatusBar(false)
-		l.SetFilteringEnabled(false)
-		l.Styles.Title = titleStyle
-		l.Styles.PaginationStyle = paginationStyle
-		l.Styles.HelpStyle = helpStyle
+	m := model{list: l}
 
-		m := model{list: l}
-
-		if _, err := tea.NewProgram(m).Run(); err != nil {
-			fmt.Println("Error running program:", err)
-			os.Exit(1)
-		}
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		fmt.Println("Error running program:", err)
+		os.Exit(1)
 	}
 }
