@@ -1,8 +1,4 @@
 # Core packages
-[[core]]
-name = "Core"
-description = "Packages used daily"
-
 [core.bat]
 name = "bat"
 apt_name = "bat"
@@ -88,10 +84,6 @@ dnf_name = "zsh"
 pacman_name = "zsh"
 
 # Design packages
-[[design]]
-name = "Design"
-description = "Media/design packages"
-
 [design.ffmpeg]
 name = "FFmpeg"
 apt_name = "ffmpeg"
@@ -100,10 +92,6 @@ dnf_name = "ffmpeg-free"
 pacman_name = "ffmpeg"
 
 # GUI Core apps
-[[gui_core]]
-name = "GUI Core"
-description = "GUI apps I use frequently/daily"
-
 [gui_core.clean_my_mac]
 name = "Clean My Mac"
 brew_cask_name = "cleanmymac"
@@ -145,10 +133,6 @@ name = "Zoom"
 brew_cask_name = "zoomus"
 
 # GUI Design apps
-[[gui_design]]
-name = "GUI Design"
-description = "GUI apps I use for media/design work"
-
 [gui_design.adobe_cc]
 name = "Adobe Creative Cloud"
 brew_cask_name = "adobe-creative-cloud"
