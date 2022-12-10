@@ -108,27 +108,27 @@ func (pm *packageManager) update() {
 func getPackageManager() packageManager {
 	if commandExists("apt") {
 		return packageManager{
-			name: "apt",
-			installCmd: "apt install -y"
-			updateCmd: "apt update"
+			name:       "apt",
+			installCmd: "apt install -y",
+			updateCmd:  "apt update",
 		}
 	} else if commandExists("brew") {
 		return packageManager{
-			name: "brew",
-			installCmd: "brew install"
-			updateCmd: "brew upgrade"
+			name:       "brew",
+			installCmd: "brew install",
+			updateCmd:  "brew upgrade",
 		}
 	} else if commandExists("dnf") {
 		return packageManager{
-			name: "dnf",
-			installCmd: "dnf install -y"
-			updateCmd: "dnf update"
+			name:       "dnf",
+			installCmd: "dnf install -y",
+			updateCmd:  "dnf update",
 		}
 	} else if commandExists("pacman") {
 		return packageManager{
-			name: "pacman",
-			installCmd: "pacman -S --no-confirm"
-			updateCmd: "pacman -Syu"
+			name:       "pacman",
+			installCmd: "pacman -S --no-confirm",
+			updateCmd:  "pacman -Syu",
 		}
 	}
 }
@@ -140,15 +140,43 @@ func install(packageGroups ...string) {
 	if len(packageGroups) > 0 {
 		// Update package manager
 		pm.update()
-		
+
 		// Gather packages to install
 		var packagesToInstall []string
 		for _, packageGroup := range packageGroups {
-			if packageGroup == "core" {
-				for _, p := range packages.Core {
-					packagesToInstall = append(packagesToInstall, p.Name)
-				}
+			switch packageGroup {
+			case "Core":
+				packagesToInstall = append(packagesToInstall, ...packages.Core)
+			case "Design":
+				packagesToInstall = append(packagesToInstall, ...packages.Design)
+			case "GuiCore":
+				packagesToInstall = append(packagesToInstall, ...packages.GuiCore)
+			case "GuiDesign":
+				packagesToInstall = append(packagesToInstall, ...packages.Design)
+			default:
+				log.Fatal(fmt.Sprintf("Package group \"%s\" is not valid", packageGroup))
 			}
+		}
+
+		// Do the installing
+		for _, packageToInstall := range packagesToInstall {
+			var packageName string
+			switch pm.name {
+			case "apt":
+				packageName = packageToInstall.AptName
+			case "brew":
+				if packageToInstall.BrewCaskName {
+					packageName = "--cask " + packageToInstall.BrewCaskName
+				} else {
+					packageName = packageToInstall.BrewName
+				}
+			case "dnf":
+				packageName = packageToInstall.DnfName
+			case "pacman":
+				packageName = packageToInstall.PacmanName
+			}
+
+			runCommand(fmt.Sprintf("%s %s", pm.installCmd, packageName))
 		}
 	}
 }
