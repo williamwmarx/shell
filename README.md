@@ -29,12 +29,18 @@ sh <(curl https://marx.sh)
 - [clear-format.sh](raycast/clear-format.sh) — Strip formatting (while keeping whitespace) from clipboard
 - [expand-url.sh](raycast/expand-url.sh) — Follow URL redirects, returning final location
 
+### skhd
+- [.skhdrc](skhd/skhdrc) — Configure the hotkey daemon I use (mainly to manage Yabai)
+
 ### Tmux
 - [.tmux.conf](tmux/tmux.conf) — Clean UI, useful info only, Vim-like keybindings
 
 ### Vim
 - [.vimrc](vim/vimrc) — My day-to-day Vim config, batteries included
 - [Template files](vim/templates) — Skeleton templates when creating a new file
+
+### Yabai
+- [.yabairc](yabai/yabairc) — Manage Yabai, the tiling window manager I use
 
 ### Zsh
 - [.zshrc](zsh/zshrc) — My go-to shell setup, leverages [Oh-My-Zsh](https://ohmyz.sh/)
