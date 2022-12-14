@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"log"
-	"time"
+	"net/http"
+	"io/ioutil"
+	"os/exec"
+	"reflect"
 )
 
 ////////////////////////////
@@ -12,9 +15,9 @@ import (
 ////////////////////////////
 
 // Download a file from this repo and return as byte array
-func download(path) []byte {
+func download(path string) []byte {
 	// Get request
-	url = "https://raw.githubusercontent.com/williamwmarx/shell/main/" + path
+	url := "https://raw.githubusercontent.com/williamwmarx/shell/main/" + path
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -74,7 +77,7 @@ func getPackages() pkgs {
 
 	// Unmarshal TOML file into struct
 	var packages pkgs
-	_, err := toml.Decode(tomlText, &packages)
+	_, err := toml.Decode(string(tomlText), &packages)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,34 +109,46 @@ func (pm *packageManager) update() {
 
 // Get system pacakge manager install command
 func getPackageManager() packageManager {
+	var pm packageManager
 	if commandExists("apt") {
-		return packageManager{
+		pm = packageManager{
 			name:       "apt",
 			installCmd: "apt install -y",
 			updateCmd:  "apt update",
 		}
 	} else if commandExists("brew") {
-		return packageManager{
+		pm = packageManager{
 			name:       "brew",
 			installCmd: "brew install",
 			updateCmd:  "brew upgrade",
 		}
 	} else if commandExists("dnf") {
-		return packageManager{
+		pm = packageManager{
 			name:       "dnf",
 			installCmd: "dnf install -y",
 			updateCmd:  "dnf update",
 		}
 	} else if commandExists("pacman") {
-		return packageManager{
+		pm = packageManager{
 			name:       "pacman",
 			installCmd: "pacman -S --no-confirm",
 			updateCmd:  "pacman -Syu",
 		}
 	}
+	return pm
 }
 
 var pm packageManager = getPackageManager()
+
+
+// Get packages from package group
+func getPackagesFromGroup(packageGroup map[string]pkg) []pkg {
+	var pacs []pkg
+	for _, pack := range packageGroup {
+		pacs = append(pacs, pack)
+	}
+	return pacs
+}
 
 // Handle the installing
 func install(packageGroups ...string) {
@@ -142,38 +157,38 @@ func install(packageGroups ...string) {
 		pm.update()
 
 		// Gather packages to install
-		var packagesToInstall []string
+		var packagesToInstall []pkg
 		for _, packageGroup := range packageGroups {
 			switch packageGroup {
 			case "Core":
-				packagesToInstall = append(packagesToInstall, ...packages.Core)
+				packagesToInstall = append(packagesToInstall, getPackagesFromGroup(packages.Core)...)
 			case "Design":
-				packagesToInstall = append(packagesToInstall, ...packages.Design)
+				packagesToInstall = append(packagesToInstall, getPackagesFromGroup(packages.Design)...)
 			case "GuiCore":
-				packagesToInstall = append(packagesToInstall, ...packages.GuiCore)
+				packagesToInstall = append(packagesToInstall, getPackagesFromGroup(packages.GuiCore)...)
 			case "GuiDesign":
-				packagesToInstall = append(packagesToInstall, ...packages.Design)
+				packagesToInstall = append(packagesToInstall, getPackagesFromGroup(packages.Design)...)
 			default:
 				log.Fatal(fmt.Sprintf("Package group \"%s\" is not valid", packageGroup))
 			}
 		}
 
 		// Do the installing
-		for _, packageToInstall := range packagesToInstall {
+		for _, packToInstall := range packagesToInstall {
 			var packageName string
 			switch pm.name {
 			case "apt":
-				packageName = packageToInstall.AptName
+				packageName = packToInstall.AptName
 			case "brew":
-				if packageToInstall.BrewCaskName {
-					packageName = "--cask " + packageToInstall.BrewCaskName
+				if reflect.ValueOf(packToInstall).Elem().FieldByName("BrewCaskName") != (reflect.Value{}) {
+					packageName = "--cask " + packToInstall.BrewCaskName
 				} else {
-					packageName = packageToInstall.BrewName
+					packageName = packToInstall.BrewName
 				}
 			case "dnf":
-				packageName = packageToInstall.DnfName
+				packageName = packToInstall.DnfName
 			case "pacman":
-				packageName = packageToInstall.PacmanName
+				packageName = packToInstall.PacmanName
 			}
 
 			runCommand(fmt.Sprintf("%s %s", pm.installCmd, packageName))
