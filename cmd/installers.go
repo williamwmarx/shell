@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"reflect"
+	"runtime"
 	"strings"
 )
 
@@ -201,8 +202,42 @@ func install(packageGroups ...string) {
 
 // Full config/install
 func fullConfig(b bool) {
+	// Install homebrew if necessary
+	if (runtime.GOOS == "darwin" && !commandExists("brew")) {
+		runCommand("NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+	}
+
+	// Install packages
 	install("Core")
 	install("Design")
 	install("GuiCore")
 	install("GuiDesign")
+
+	// Install oh-my-zsh
+	runCommand("sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended")
+
+	// Clone this repo into home directory
+	runCommand("git clone https://github.com/williamwmarx/shell ~/.shell")
+
+	// Create symlinks
+	os.Symlink("~/.shell/git/gitconfig", "~/.gitconfig")
+	_ = os.Mkdir("~/.gnupg", os.ModePerm)
+	os.Symlink("~/.shell/gnupg/gpg-agent.conf", "~/.gnupg/gpg-agent.conf")
+	os.Symlink("~/.shell/gnupg/gpg.conf", "~/.gnupg/gpg.conf")
+	os.Symlink("~/.shell/personal/plan", "~/.plan")
+	_ = os.Mkdir("~/.raycast", os.ModePerm)
+	os.Symlink("~/.shell/raycast/clear-format.sh", "~/.raycast/clear-format.sh")
+	os.Symlink("~/.shell/raycast/expand-url.sh", "~/.raycast/expand-url.sh")
+	os.Symlink("~/.shell/skhd/skhdrc", "~/.skhdrc")
+	os.Symlink("~/.shell/tmux/tmux.conf", "~/.tmux.conf")
+	os.Symlink("~/.shell/vim/vimrc", "~/.vimrc")
+	_ = os.Mkdir("~/.vim", os.ModePerm)
+	_ = os.Mkdir("~/.vim/templates", os.ModePerm)
+	os.Symlink("~/.shell/vim/tempaltes/skeleton.py", "~/.vim/templates/skeleton.py")
+	os.Symlink("~/.shell/vim/tempaltes/skeleton.sh", "~/.vim/templates/skeleton.sh")
+	os.Symlink("~/.shell/yabai/yabairc", "~/.yabairc")
+	os.Symlink("~/.shell/zsh/zshrc", "~/.zshrc")
+	os.Symlink("~/.shell/zsh/aliases", "~/.aliases")
+	os.Symlink("~/.shell/zsh/functions", "~/.functions")
+	os.Symlink("~/.shell/zsh/t3.zsh-theme", "~/.oh-my-zsh/themes/t3.zsh-theme")
 }
