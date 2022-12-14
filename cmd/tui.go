@@ -103,22 +103,22 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				switch string(i) {
 				case "Full shell config":
 					m.actions = append(m.actions, action{"Full shell config", fullConfig})
-				case "Zsh/Oh My Zsh config":
-					m.actions = append(m.actions, action{"Zsh/Oh My Zsh config", blankFunc})
-				case "Vim + plugins config":
-					m.actions = append(m.actions, action{"Vim + plugins config", blankFunc})
-				case "[TMP] Zsh config (no plugins)":
-					m.actions = append(m.actions, action{"[TMP] Zsh config (no plugins)", blankFunc})
-				case "[TMP] Vim config (no plugins)":
-					m.actions = append(m.actions, action{"[TMP] Vim config (no plugins)", blankFunc})
+				// case "Zsh/Oh My Zsh config":
+				// 	m.actions = append(m.actions, action{"Zsh/Oh My Zsh config", blankFunc})
+				// case "Vim + plugins config":
+				// 	m.actions = append(m.actions, action{"Vim + plugins config", blankFunc})
+				// case "[TMP] Zsh config (no plugins)":
+				// 	m.actions = append(m.actions, action{"[TMP] Zsh config (no plugins)", blankFunc})
+				// case "[TMP] Vim config (no plugins)":
+				// 	m.actions = append(m.actions, action{"[TMP] Vim config (no plugins)", blankFunc})
 				case "Core packages":
 					m.actions = append(m.actions, action{"Core packages", func(b bool){install("Core")}})
 				case "Design packages":
-					m.actions = append(m.actions, action{"Core packages", func(b bool){install("Design")}})
+					m.actions = append(m.actions, action{"Design packages", func(b bool){install("Design")}})
 				case "Core GUI packages":
-					m.actions = append(m.actions, action{"Core packages", func(b bool){install("GuiCore")}})
+					m.actions = append(m.actions, action{"Core GUI packages", func(b bool){install("GuiCore")}})
 				case "Design GUI packages":
-					m.actions = append(m.actions, action{"Core packages", func(b bool){install("GuiDesign")}})
+					m.actions = append(m.actions, action{"Design GUI packages", func(b bool){install("GuiDesign")}})
 				}
 				return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
 			}
@@ -191,11 +191,11 @@ func tui(actions []action, temporaryInstall bool) {
 
 	items := []list.Item{
 		item("Full shell config"),
-		item("Zsh/Oh My Zsh config"),
-		item("Vim + plugins config"),
-		item("tmux config"),
-		item("[TMP] Zsh config (no plugins)"),
-		item("[TMP] Vim config (no plugins)"),
+		// item("Zsh/Oh My Zsh config"),
+		// item("Vim + plugins config"),
+		// item("tmux config"),
+		// item("[TMP] Zsh config (no plugins)"),
+		// item("[TMP] Vim config (no plugins)"),
 		item("Core packages"),
 		item("Design packages"),
 		item("Core GUI packages"),
