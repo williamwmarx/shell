@@ -110,17 +110,11 @@ func (pm *packageManager) update() {
 // Get system pacakge manager install command
 func getPackageManager() packageManager {
 	var pm packageManager
-	if commandExists("apt") {
+	if commandExists("pacman") {
 		pm = packageManager{
-			name:       "apt",
-			installCmd: "apt install -y",
-			updateCmd:  "apt update",
-		}
-	} else if commandExists("brew") {
-		pm = packageManager{
-			name:       "brew",
-			installCmd: "brew install",
-			updateCmd:  "brew upgrade",
+			name:       "pacman",
+			installCmd: "pacman -S --no-confirm",
+			updateCmd:  "pacman -Syu",
 		}
 	} else if commandExists("dnf") {
 		pm = packageManager{
@@ -128,11 +122,17 @@ func getPackageManager() packageManager {
 			installCmd: "dnf install -y",
 			updateCmd:  "dnf update",
 		}
-	} else if commandExists("pacman") {
+	} else if commandExists("brew") {
 		pm = packageManager{
-			name:       "pacman",
-			installCmd: "pacman -S --no-confirm",
-			updateCmd:  "pacman -Syu",
+			name:       "brew",
+			installCmd: "brew install",
+			updateCmd:  "brew upgrade",
+		}
+	} else if commandExists("apt") {
+		pm = packageManager{
+			name:       "apt",
+			installCmd: "apt install -y",
+			updateCmd:  "apt update",
 		}
 	}
 	return pm
@@ -194,4 +194,12 @@ func install(packageGroups ...string) {
 			runCommand(fmt.Sprintf("%s %s", pm.installCmd, packageName))
 		}
 	}
+}
+
+// Full config/install
+func fullConfig(b bool) {
+	install("Core")
+	install("Design")
+	install("GuiCore")
+	install("GuiDesign")
 }

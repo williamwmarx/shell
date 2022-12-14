@@ -102,7 +102,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if ok {
 				switch string(i) {
 				case "Full shell config":
-					m.actions = append(m.actions, action{"Full shell config", blankFunc})
+					m.actions = append(m.actions, action{"Full shell config", fullConfig})
 				case "Zsh/Oh My Zsh config":
 					m.actions = append(m.actions, action{"Zsh/Oh My Zsh config", blankFunc})
 				case "Vim + plugins config":
@@ -112,7 +112,13 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				case "[TMP] Vim config (no plugins)":
 					m.actions = append(m.actions, action{"[TMP] Vim config (no plugins)", blankFunc})
 				case "Core packages":
-					m.actions = append(m.actions, action{"Core pacakges", func(b bool){install("Core")}})
+					m.actions = append(m.actions, action{"Core packages", func(b bool){install("Core")}})
+				case "Design packages":
+					m.actions = append(m.actions, action{"Core packages", func(b bool){install("Design")}})
+				case "Core GUI packages":
+					m.actions = append(m.actions, action{"Core packages", func(b bool){install("GuiCore")}})
+				case "Design GUI packages":
+					m.actions = append(m.actions, action{"Core packages", func(b bool){install("GuiDesign")}})
 				}
 				return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
 			}
@@ -190,6 +196,10 @@ func tui(actions []action, temporaryInstall bool) {
 		item("tmux config"),
 		item("[TMP] Zsh config (no plugins)"),
 		item("[TMP] Vim config (no plugins)"),
+		item("Core packages"),
+		item("Design packages"),
+		item("Core GUI packages"),
+		item("Design GUI packages"),
 	}
 
 	l := list.New(items, itemDelegate{}, 25, len(items)+6)
