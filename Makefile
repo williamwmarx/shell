@@ -7,9 +7,6 @@ build:
 	GOOS=linux GOARCH=arm go build -o releases/${BINARY_NAME}-linux-arm
 	GOOS=linux GOARCH=arm64 go build -o releases/${BINARY_NAME}-linux-arm64
 	GOOS=linux GOARCH=amd64 go build -o releases/${BINARY_NAME}-linux-amd64
-	GOOS=windows GOARCH=arm go build -o releases/${BINARY_NAME}-windows-arm
-	GOOS=windows GOARCH=arm64 go build -o releases/${BINARY_NAME}-windows-arm64
-	GOOS=windows GOARCH=amd64 go build -o releases/${BINARY_NAME}-windows-amd64
 
 clean:
 	go clean
