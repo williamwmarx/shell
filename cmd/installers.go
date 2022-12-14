@@ -102,6 +102,7 @@ type packageManager struct {
 // Install a package
 func (pm *packageManager) install(packageName string) {
 	runCommand(fmt.Sprintf("%s %s", pm.installCmd, packageName))
+
 }
 
 // Update pacakge manager
@@ -182,7 +183,7 @@ func install(packageGroups ...string) {
 			case "apt":
 				packageName = packToInstall.AptName
 			case "brew":
-				if reflect.ValueOf(packToInstall).Elem().FieldByName("BrewCaskName") != (reflect.Value{}) {
+				if reflect.ValueOf(&packToInstall).Elem().FieldByName("BrewCaskName").String() != "" {
 					packageName = "--cask " + packToInstall.BrewCaskName
 				} else {
 					packageName = packToInstall.BrewName
