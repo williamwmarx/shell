@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"reflect"
+	"strings"
 )
 
 ////////////////////////////
@@ -40,7 +41,8 @@ func commandExists(commandName string) bool {
 
 // Run a system command
 func runCommand(command string) {
-	cmd := exec.Command(command)
+	args := strings.Fields(command)
+	cmd := exec.Command(args[0], args[1:]...)
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
