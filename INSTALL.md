@@ -6,6 +6,7 @@ sh <(curl https://marx.sh)
 ```
 
 ## Non-interactive install options
+⚠️ NOT YET IMPLEMENTED ⚠️
 ### Install everything
 ```bash
 sh <(curl https://marx.sh) --all
