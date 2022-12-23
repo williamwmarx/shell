@@ -177,6 +177,7 @@ Plug 'google/vim-glaive'	"Dependency of google/vim-codefmt
 Plug 'neoclide/coc.nvim', {'branch': 'release'}  "Code completion
 Plug 'airblade/vim-gitgutter'  "Git status in the gutter
 Plug 'Yggdroot/indentLine'  "Vertical indent lines
+Plug 'github/copilot.vim'  "GitHub CoPilot
 call plug#end()
 
 " -------------------------- Plugin-Specific Settings -------------------------
