@@ -17,6 +17,7 @@ There're too many choices to describe, but the [.vimrc](vimrc) file itself is we
 - [google/vim-glaive](https://github.com/google/vim-glaive)	— Dependency of google/vim-codefmt
 - [neoclide/coc.nvim](https://github.com/neoclide/coc.nvim) — Code completion
 - [airblade/vim-gitgutter](https://github.com/airblade/vim-gitgutter) — Git status in the gutter
+- [github/copilot.vim](https://github.com/github/copilot.vim) — GitHub Copilot
 
 ### Leader Mappings
 The leader key is `\`. These only work in Vim's normal mode.
