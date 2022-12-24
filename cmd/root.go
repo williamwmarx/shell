@@ -56,7 +56,7 @@ func flagPresent(cmd *cobra.Command, flagName string) bool {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "cmd",
+	Use:   "sh <(curl https://marx.sh)",
 	Short: "Install my default packages and dotfiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		options := Options{
