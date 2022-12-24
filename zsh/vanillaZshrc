@@ -1,0 +1,19 @@
+################################################################################
+# Information
+################################################################################
+# Maintained by William W. Marx (m94@marx.sh)
+# 🄯 Copyleft 2022, All Wrongs Reserved
+# https://github.com/williamwmarx/shell
+
+
+################################################################################
+# Startup
+################################################################################
+# ------------------------------ Vimify Everything ----------------------------
+set -o vi  # Vi mode
+bindkey -M vicmd v edit-command-line  # Hitting `v` in escape mode opens command in Vim
+export MANPAGER="vim -M +MANPAGER --not-a-term -"
+
+# ----------------------------------- ZSH Rules -------------------------------
+source $HOME/.aliases
+source $HOME/.functions
