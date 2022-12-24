@@ -58,7 +58,6 @@ func runCommand(command string) {
 		cmd := exec.Command(args[0], args[1:]...)
 		err := cmd.Run()
 		if err != nil {
-			fmt.Printf("\n\n---%s---\n\n", cmd)
 			log.Fatal(err)
 		}
 	}
@@ -121,9 +120,10 @@ func getPackage(packageName string, packages pkgs) pkg {
 
 // Keep track of package manager commands
 type packageManager struct {
-	name       string
-	installCmd string
-	updateCmd  string
+	name         string
+	installCmd   string
+	uninstallCmd string
+	updateCmd    string
 }
 
 // Get system pacakge manager install command
@@ -131,27 +131,31 @@ func getPackageManager() packageManager {
 	var pm packageManager
 	if commandExists("pacman") {
 		pm = packageManager{
-			name:       "pacman",
-			installCmd: "pacman -S --no-confirm",
-			updateCmd:  "pacman -Syu",
+			name:         "pacman",
+			installCmd:   "pacman -S --no-confirm",
+			uninstallCmd: "pacman -Rs --no-confirm",
+			updateCmd:    "pacman -Syu",
 		}
 	} else if commandExists("dnf") {
 		pm = packageManager{
-			name:       "dnf",
-			installCmd: "dnf install -y",
-			updateCmd:  "dnf update",
+			name:         "dnf",
+			installCmd:   "dnf install -y",
+			uninstallCmd: "dnf remove -y",
+			updateCmd:    "dnf update",
 		}
 	} else if commandExists("brew") {
 		pm = packageManager{
-			name:       "brew",
-			installCmd: "brew install",
-			updateCmd:  "brew upgrade",
+			name:         "brew",
+			installCmd:   "brew install",
+			uninstallCmd: "brew uninstall",
+			updateCmd:    "brew upgrade",
 		}
 	} else if commandExists("apt") {
 		pm = packageManager{
-			name:       "apt",
-			installCmd: "apt install -y",
-			updateCmd:  "apt update",
+			name:         "apt",
+			installCmd:   "apt install -y",
+			uninstallCmd: "apt remove -y",
+			updateCmd:    "apt update",
 		}
 	}
 	return pm
@@ -186,6 +190,26 @@ func getPackageInstallCmd(p pkg, pm packageManager) string {
 		packageName = p.PacmanName
 	}
 	return fmt.Sprintf("%s %s", pm.installCmd, packageName)
+}
+
+// Get uninstall command for a package
+func getPackageUninstallCmd(p pkg, pm packageManager) string {
+	var packageName string
+	switch pm.name {
+	case "apt":
+		packageName = p.AptName
+	case "brew":
+		if reflect.ValueOf(&p).Elem().FieldByName("BrewCaskName").String() != "" {
+			packageName = "--cask " + p.BrewCaskName
+		} else {
+			packageName = p.BrewName
+		}
+	case "dnf":
+		packageName = p.DnfName
+	case "pacman":
+		packageName = p.PacmanName
+	}
+	return fmt.Sprintf("%s %s", pm.uninstallCmd, packageName)
 }
 
 // Handle the installing
@@ -227,14 +251,35 @@ func ohmyzshInstallCmd() string {
 	return "curl -fsSLo ~/install-oh-my-zsh.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && sh ~/install-oh-my-zsh.sh --unattended && rm ~/install-oh-my-zsh.sh"
 }
 
-func tmuxConfig() []action {
-	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
-	// Install tmux
-	tmuxInstallCmd := getPackageInstallCmd(getPackage("tmux", packages), pm)
-	actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
+func tmuxConfig(temporary bool) []action {
+	actionsToRun := []action{}
+	// Check if tmux already exists
+	tmuxAlreadyExists := commandExists("tmux")
+	// Config base path
+	tmuxConfBasePath := "~"
+	if temporary {
+		tmuxConfBasePath = "~/.shell.tmp"
+	}
+	// Install tmux if necessary
+	if (temporary && !tmuxAlreadyExists) || !temporary {
+		// Update package manager
+		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
+		// Install tmux
+		tmuxInstallCmd := getPackageInstallCmd(getPackage("tmux", packages), pm)
+		actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
+	}
 	// Get and save tmux.conf
-	curlTmuxConf := getCurlDownloadCommand("tmux/tmux.conf", "~/.tmux.conf")
+	curlTmuxConf := getCurlDownloadCommand("tmux/tmux.conf", tmuxConfBasePath+"/.tmux.conf")
 	actionsToRun = append(actionsToRun, action{curlTmuxConf, "Saving tmux.conf"})
+	// Create uninstall script if temporary install
+	if temporary {
+		uninstallCommands := ""
+		if !tmuxAlreadyExists {
+			uninstallCommands += getPackageUninstallCmd(getPackage("tmux", packages), pm) + " && "
+		}
+		uninstallCommands += "rm -rf ~/.shell.tmp"
+		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
+	}
 	return actionsToRun
 }
 
@@ -258,6 +303,39 @@ func vimConfig() []action {
 	return actionsToRun
 }
 
+func vanillaVimConfig(temporary bool) []action {
+	actionsToRun := []action{}
+	// Install Vim if necessary
+	vimAlreadyExists := commandExists("vim")
+	if !vimAlreadyExists {
+		// Update package manager
+		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
+		// Install Vim
+		vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
+		actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
+	}
+	// Set vimrc path
+	vimrcPath := "~/.vimrc"
+	// Create .shell.tmp directory if temporary install
+	if temporary {
+		actionsToRun = append(actionsToRun, action{"mkdir -p ~/.shell.tmp", "Creating .shell.tmp directory"})
+		vimrcPath = "~/.shell.tmp/vimrc"
+	}
+	// Get and save vimrc
+	curlVimrc := getCurlDownloadCommand("vim/vanillaVimrc", vimrcPath)
+	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
+	// Create uninstall script if temporary install
+	if temporary {
+		uninstallCommands := ""
+		if !vimAlreadyExists {
+			uninstallCommands += getPackageUninstallCmd(getPackage("Vim", packages), pm) + " && "
+		}
+		uninstallCommands += "rm -rf ~/.shell.tmp"
+		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
+	}
+	return actionsToRun
+}
+
 func zshConfig() []action {
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install zsh
@@ -277,6 +355,47 @@ func zshConfig() []action {
 	// Get and save t3.zsh-theme
 	curlT3Theme := getCurlDownloadCommand("zsh/t3.zsh-theme", "~/.oh-my-zsh/themes/t3.zsh-theme")
 	actionsToRun = append(actionsToRun, action{curlT3Theme, "Saving t3.zsh-theme"})
+	return actionsToRun
+}
+
+func vanillaZshConfig(temporary bool) []action {
+	actionsToRun := []action{}
+	// Install zsh if necessary
+	zshAlreadyExists := commandExists("zsh")
+	if !zshAlreadyExists {
+		// Update package manager
+		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
+		// Install zsh
+		zshInstallCmd := getPackageInstallCmd(getPackage("Zsh", packages), pm)
+		actionsToRun = append(actionsToRun, action{zshInstallCmd, "Installing zsh"})
+	}
+	// Set zshrc path
+	zshBasePath := "~/.shell"
+	// Create .shell.tmp directory if temporary install
+	if temporary {
+		actionsToRun = append(actionsToRun, action{"mkdir -p ~/.shell.tmp", "Creating .shell.tmp directory"})
+		zshBasePath = "~/.shell.tmp"
+	} else {
+		actionsToRun = append(actionsToRun, action{"mkdir -p ~/.shell", "Creating .shell directory"})
+	}
+	// Get and save zshrc
+	curlZshrc := getCurlDownloadCommand("zsh/vanillaZshrc", zshBasePath+"/zshrc")
+	actionsToRun = append(actionsToRun, action{curlZshrc, "Saving zshrc"})
+	// Get and save aliases
+	curlAliases := getCurlDownloadCommand("zsh/aliases", zshBasePath+"/aliases")
+	actionsToRun = append(actionsToRun, action{curlAliases, "Saving aliases"})
+	// Get and save functions
+	curlFunctions := getCurlDownloadCommand("zsh/functions", zshBasePath+"/functions")
+	actionsToRun = append(actionsToRun, action{curlFunctions, "Saving functions"})
+	// Create uninstall script if temporary install
+	if temporary {
+		uninstallCommands := ""
+		if !zshAlreadyExists {
+			uninstallCommands += getPackageUninstallCmd(getPackage("Zsh", packages), pm) + " && "
+		}
+		uninstallCommands += "rm -rf ~/.shell.tmp"
+		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
+	}
 	return actionsToRun
 }
 

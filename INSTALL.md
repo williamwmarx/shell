@@ -6,10 +6,9 @@ sh <(curl https://marx.sh)
 ```
 
 ## Non-interactive install options
-⚠️ NOT YET IMPLEMENTED ⚠️
 ### Install everything
 ```bash
-sh <(curl https://marx.sh) --all
+sh <(curl https://marx.sh) --full
 ```
 
 ### Partial install
@@ -35,10 +34,24 @@ Install [Zsh](https://www.zsh.org/), [Oh-My-Zsh](https://ohmyz.sh/), [.zshrc](zs
 sh <(curl https://marx.sh) --zsh
 ```
 
+#### Vim
+Install [Vim](https://github.com/vim/vim), and [vanilla .vimrc](vim/vanillaVimrc)
+```bash
+sh <(curl https://marx.sh) --vanilla-vim
+```
+
+#### Zsh
+Install [Zsh](https://www.zsh.org/), [vanilla .zshrc](zsh/vanillaZshrc), [.aliases](zsh/aliases) and 
+[.functions](zsh/functions)
+```bash
+sh <(curl https://marx.sh) --vanilla-zsh
+```
+
 ### Temporary install
 Sometimes, you only need your dotfiles temporarily. For example, say you're debugging editing some
 code on a friend's machine. You could slowly go through it with their editor, or you could load up
 your vim config and fly through their code. This is where the `--tmp` flag comes in. You can use the
 `--tmp` flag with `--tmux`, `--vim`, or `--zsh`. It will install the packages, download necessary
-dotfiles into the `~/.shell.tmp` directory, and add an alias the alias `tmp-uninstall` which will
-uninstall any packages you installed and remove the `~/.shell.tmp` directory.
+dotfiles into the `~/.shell.tmp` directory, and add the shell script `~/.shell.tmp/uninstall.sh`
+which will uninstall any packages you installed and remove the `~/.shell.tmp` directory. Temporary
+install of both Vim and Zsh install the “vanilla” versions of their config files.

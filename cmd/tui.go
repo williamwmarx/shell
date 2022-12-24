@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -118,10 +118,14 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 					m.actions = append(m.actions, zshConfig()...)
 				case "Vim + plugins config":
 					m.actions = append(m.actions, vimConfig()...)
-				case "[TMP] Zsh config (no plugins)":
-					m.actions = append(m.actions, action{"", "[TMP] Zsh config (no plugins)"})
-				case "[TMP] Vim config (no plugins)":
-					m.actions = append(m.actions, action{"", "[TMP] Vim config (no plugins)"})
+				case "tmux config":
+					m.actions = append(m.actions, tmuxConfig(false)...)
+				case "Temporary Zsh config (no plugins)":
+					m.actions = append(m.actions, vanillaZshConfig(true)...)
+				case "Temporary Vim config (no plugins)":
+					m.actions = append(m.actions, vanillaVimConfig(true)...)
+				case "Temporary tmux config":
+					m.actions = append(m.actions, tmuxConfig(true)...)
 				case "Core packages":
 					m.actions = append(m.actions, installActions("Core")...)
 				case "Design packages":
@@ -222,27 +226,32 @@ func tui(tuiOptions []string) {
 
 	if len(tuiOptions) > 1 {
 		// Options passed, run without TUI list selector
-		if contains(tuiOptions, "full") {
-			actions = append(actions, fullConfig()...)
-		} else if contains(tuiOptions, "tmux") {
-			actions = append(actions, tmuxConfig()...)
-		} else if contains(tuiOptions, "tmux temporary") {
-			// TODO: tmux temporary
-		} else if contains(tuiOptions, "vim") {
+		if contains(tuiOptions, "tmux") {
+			actions = append(actions, tmuxConfig(false)...)
+		}
+		if contains(tuiOptions, "tmux temporary") {
+			actions = append(actions, tmuxConfig(true)...)
+		}
+		if contains(tuiOptions, "vim") {
 			actions = append(actions, vimConfig()...)
-		} else if contains(tuiOptions, "vanilla-vim") {
-			// TODO: vanilla-vim
-		} else if contains(tuiOptions, "vanilla-vim temporary") {
-			// TODO: vanilla-vim temporary
-		} else if contains(tuiOptions, "zsh") {
+		}
+		if contains(tuiOptions, "vanilla-vim") {
+			actions = append(actions, vanillaVimConfig(false)...)
+		}
+		if contains(tuiOptions, "vanilla-vim temporary") {
+			actions = append(actions, vanillaVimConfig(true)...)
+		}
+		if contains(tuiOptions, "zsh") {
 			actions = append(actions, zshConfig()...)
-		} else if contains(tuiOptions, "vanilla-zsh") {
-			// TODO: vanilla-zsh
-		} else if contains(tuiOptions, "vanilla-zsh temporary") {
-			// TODO: vanilla-zsh temporary
-		} else {
-			log.Fatal("Invalid option")
-			os.Exit(1)
+		}
+		if contains(tuiOptions, "vanilla-zsh") {
+			actions = append(actions, vanillaZshConfig(false)...)
+		}
+		if contains(tuiOptions, "vanilla-zsh temporary") {
+			actions = append(actions, vanillaZshConfig(true)...)
+		}
+		if contains(tuiOptions, "full") {
+			actions = fullConfig() // Full config bypasses other options
 		}
 	}
 
@@ -254,10 +263,45 @@ func tui(tuiOptions []string) {
 		item("tmux config"),
 		item("Temporary Zsh config (no plugins)"),
 		item("Temporary Vim config (no plugins)"),
+		item("Temporary tmux config"),
 		item("Core packages"),
 		item("Design packages"),
 		item("Core GUI packages"),
 		item("Design GUI packages"),
+	}
+
+	// Remove duplicate actions with name "Updating package manager", "Creating .shell.tmp directory" combine uninstall scripts
+	filteredActions := []action{}
+	alreadyUpdated := false
+	alreadyCreatedTmpDir := false
+	uninstallCommands := []string{}
+	for _, a := range actions {
+		if a.name == "Updating package manager" {
+			if alreadyUpdated {
+				continue
+			} else {
+				alreadyUpdated = true
+			}
+		} else if a.name == "Creating .shell.tmp directory" {
+			if alreadyCreatedTmpDir {
+				continue
+			} else {
+				alreadyCreatedTmpDir = true
+			}
+		} else if a.name == "Saving uninstall script" {
+			for _, c := range strings.Split(a.command, " && ") {
+				tc := strings.TrimSpace(c)
+				if tc != "rm -rf ~/.shell.tmp" {
+					uninstallCommands = append(uninstallCommands, tc)
+				}
+			}
+			continue
+		}
+		filteredActions = append(filteredActions, a)
+	}
+	if len(uninstallCommands) > 0 {
+		uninstallCommand := fmt.Sprintf("echo \"%s && rm -rf ~/.shell.tmp\" > ~/.shell.tmp/uninstall.sh", strings.Join(uninstallCommands, " && "))
+		filteredActions = append(filteredActions, action{uninstallCommand, "Saving uninstall script"})
 	}
 
 	// Setup list
@@ -270,7 +314,7 @@ func tui(tuiOptions []string) {
 	l.Styles.HelpStyle = helpStyle
 
 	// Setup model
-	m := model{list: l, spinner: s, actions: actions, firstFlagInstall: len(actions) > 1}
+	m := model{list: l, spinner: s, actions: filteredActions, firstFlagInstall: len(filteredActions) > 1}
 
 	// Run the program
 	if _, err := tea.NewProgram(m).Run(); err != nil {
