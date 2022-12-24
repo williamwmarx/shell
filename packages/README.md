@@ -18,6 +18,7 @@ each package are `apt_name`, `brew_name`, `brew_cask_name`, `dnf_name`, and `pac
 - [fzf](https://github.com/junegunn/fzf) — A command-line fuzzy finder
 - [git](https://git-scm.com/) — A distributed version control system
 - [gnupg](https://gnupg.org/) — A complete and free implementation of the OpenPGP standard
+- [node](https://nodejs.org/) — An open-source, cross-platform JavaScript runtime environment
 - [openssl](https://github.com/openssl/openssl) — TLS/SSL and crypto library
 - [ripgrep](https://github.com/BurntSushi/ripgrep) — A modern replacement for `grep`
 - [tmux](https://github.com/tmux/tmux) — A terminal multiplexer
