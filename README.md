@@ -22,9 +22,6 @@ sh <(curl https://marx.sh)
 ### Packages
 - See the [packages](packages) README for more info
 
-### Personal
-- [.plan](personal/plan) — A nostalgic resurrection of the [Carmack-esque](https://garbagecollected.org/2017/10/24/the-carmack-plan/) .plan file
-
 ### Raycast
 - [clear-format.sh](raycast/clear-format.sh) — Strip formatting (while keeping whitespace) from clipboard
 - [expand-url.sh](raycast/expand-url.sh) — Follow URL redirects, returning final location
