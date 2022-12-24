@@ -1,45 +1,50 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 // Potential install options
 type Options struct {
-	tmp bool
-	tmux bool
-	vim bool
-	zsh bool
+	tmp        bool
+	tmux       bool
+	vim        bool
+	zsh        bool
+	vanillaVim bool
+	vanillaZsh bool
 }
 
 func runRoot(options Options) {
-	// Add actions
-	actions := []action{}
+	// Options to pass to TUI
+	tuiOptions := []string{}
 	// Install tmux?
 	if options.tmux {
 		if options.tmp {
-			fmt.Println("Temporarily install tmux")
+			tuiOptions = append(tuiOptions, "tmux temporary")
 		} else {
-			fmt.Println("Install tmux")
+			tuiOptions = append(tuiOptions, "tmux")
 		}
 	}
 	// Install vim?
-	if options.vim {
-		if options.tmp {
-			fmt.Println("Temporarily install vim")
-		} else {
-			fmt.Println("Install vim")
-		}
+	if options.vim && options.tmp {
+		tuiOptions = append(tuiOptions, "vanilla-vim temporary")
+	} else if options.vanillaVim {
+		tuiOptions = append(tuiOptions, "vanilla-vim")
+	} else if options.vim {
+		tuiOptions = append(tuiOptions, "vim")
 	}
 	// Install zsh?
-	if options.zsh {
-		actions = append(actions, action{"zsh", blankFunc})
+	if options.zsh && options.tmp {
+		tuiOptions = append(tuiOptions, "vanilla-zsh temporary")
+	} else if options.vanillaZsh {
+		tuiOptions = append(tuiOptions, "vanilla-zsh")
+	} else if options.zsh {
+		tuiOptions = append(tuiOptions, "zsh")
 	}
-	// Launch TUI
-	tui(actions, options.tmp)
+	tui(tuiOptions)
 }
 
 func flagPresent(cmd *cobra.Command, flagName string) bool {
@@ -53,12 +58,12 @@ func flagPresent(cmd *cobra.Command, flagName string) bool {
 var rootCmd = &cobra.Command{
 	Use:   "cmd",
 	Short: "Install my default packages and dotfiles",
-	Run:   func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, args []string) {
 		options := Options{
-			tmp: flagPresent(cmd, "tmp"),
+			tmp:  flagPresent(cmd, "tmp"),
 			tmux: flagPresent(cmd, "tmux"),
-			vim: flagPresent(cmd, "vim"),
-			zsh: flagPresent(cmd, "zsh"),
+			vim:  flagPresent(cmd, "vim"),
+			zsh:  flagPresent(cmd, "zsh"),
 		}
 		runRoot(options)
 	},
@@ -76,4 +81,6 @@ func init() {
 	rootCmd.Flags().BoolP("tmux", "", false, "Install tmux and configuration files")
 	rootCmd.Flags().BoolP("vim", "", false, "Install vim and configuration files")
 	rootCmd.Flags().BoolP("zsh", "", false, "Install zsh and configuration files")
+	rootCmd.Flags().BoolP("vanilla-vim", "", false, "Install vim and configuration files without plugins")
+	rootCmd.Flags().BoolP("vanilla-zsh", "", false, "Install zsh and configuration files without plugins")
 }

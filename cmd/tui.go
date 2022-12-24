@@ -26,8 +26,8 @@ var (
 func blankFunc(b bool) {}
 
 type action struct {
-	name string
-	fn   func(bool)
+	command string
+	name    string
 }
 
 type item string
@@ -102,23 +102,23 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if ok {
 				switch string(i) {
 				case "Full shell config":
-					m.actions = append(m.actions, action{"Full shell config", fullConfig})
-				// case "Zsh/Oh My Zsh config":
-				// 	m.actions = append(m.actions, action{"Zsh/Oh My Zsh config", blankFunc})
-				// case "Vim + plugins config":
-				// 	m.actions = append(m.actions, action{"Vim + plugins config", blankFunc})
-				// case "[TMP] Zsh config (no plugins)":
-				// 	m.actions = append(m.actions, action{"[TMP] Zsh config (no plugins)", blankFunc})
-				// case "[TMP] Vim config (no plugins)":
-				// 	m.actions = append(m.actions, action{"[TMP] Vim config (no plugins)", blankFunc})
+					m.actions = append(m.actions, fullConfig()...)
+				case "Zsh/Oh My Zsh config":
+					m.actions = append(m.actions, zshConfig()...)
+				case "Vim + plugins config":
+					m.actions = append(m.actions, vimConfig()...)
+				case "[TMP] Zsh config (no plugins)":
+					m.actions = append(m.actions, action{"", "[TMP] Zsh config (no plugins)"})
+				case "[TMP] Vim config (no plugins)":
+					m.actions = append(m.actions, action{"", "[TMP] Vim config (no plugins)"})
 				case "Core packages":
-					m.actions = append(m.actions, action{"Core packages", func(b bool){install("Core")}})
+					m.actions = append(m.actions, installActions("Core")...)
 				case "Design packages":
-					m.actions = append(m.actions, action{"Design packages", func(b bool){install("Design")}})
+					m.actions = append(m.actions, installActions("Design")...)
 				case "Core GUI packages":
-					m.actions = append(m.actions, action{"Core GUI packages", func(b bool){install("GuiCore")}})
+					m.actions = append(m.actions, installActions("GuiCore")...)
 				case "Design GUI packages":
-					m.actions = append(m.actions, action{"Design GUI packages", func(b bool){install("GuiDesign")}})
+					m.actions = append(m.actions, installActions("GuiDesign")...)
 				}
 				return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
 			}
@@ -179,23 +179,60 @@ type completedActionsMsg string
 
 func downloadAndInstall(a action) tea.Cmd {
 	return tea.Tick(time.Millisecond*0, func(t time.Time) tea.Msg {
-		a.fn(false)
+		runCommand(a.command)
 		return completedActionsMsg(a.name)
 	})
 }
 
-func tui(actions []action, temporaryInstall bool) {
-	actions = append([]action{action{"", blankFunc}}, actions...)
+// Function to check if array of string contains element
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
-	fmt.Println(temporaryInstall)
+func tui(tuiOptions []string) {
+	tuiOptions = append([]string{""}, tuiOptions...)
 
+	// Spinner style
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Bold(true)
+
+	// Action actions
+	actions := []action{}
+	if len(tuiOptions) > 1 {
+		// Options passed, run without TUI list selector
+		if contains(tuiOptions, "tmux") {
+			actions = append(actions, tmuxConfig()...)
+		} else if contains(tuiOptions, "tmux temporary") {
+			// TODO: tmux temporary
+		} else if contains(tuiOptions, "vim") {
+			actions = append(actions, vimConfig()...)
+		} else if contains(tuiOptions, "vanilla-vim") {
+			// TODO: vanilla-vim
+		} else if contains(tuiOptions, "vanilla-vim temporary") {
+			// TODO: vanilla-vim temporary
+		} else if contains(tuiOptions, "zsh") {
+			actions = append(actions, zshConfig()...)
+		} else if contains(tuiOptions, "vanilla-zsh") {
+			// TODO: vanilla-zsh
+		} else if contains(tuiOptions, "vanilla-zsh temporary") {
+			// TODO: vanilla-zsh temporary
+		}
+	}
+
+	// No options passed, launch the TUI list selector
 	items := []list.Item{
 		item("Full shell config"),
-		// item("Zsh/Oh My Zsh config"),
-		// item("Vim + plugins config"),
-		// item("tmux config"),
-		// item("[TMP] Zsh config (no plugins)"),
-		// item("[TMP] Vim config (no plugins)"),
+		item("Zsh/Oh My Zsh config"),
+		item("Vim + plugins config"),
+		item("tmux config"),
+		item("[TMP] Zsh config (no plugins)"),
+		item("[TMP] Vim config (no plugins)"),
 		item("Core packages"),
 		item("Design packages"),
 		item("Core GUI packages"),
@@ -209,10 +246,6 @@ func tui(actions []action, temporaryInstall bool) {
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
-
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Bold(true)
 
 	m := model{list: l, spinner: s, actions: actions, firstFlagInstall: len(actions) > 1}
 
