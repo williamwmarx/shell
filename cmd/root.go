@@ -47,11 +47,12 @@ func runRoot(options Options) {
 	}
 	// Full system config?
 	if options.full {
-		tuiOptions = []string{"full"}
+		tuiOptions = []string{"full"} // Overwrite any other options
 	}
 	tui(tuiOptions)
 }
 
+// Check if a flag is present
 func flagPresent(cmd *cobra.Command, flagName string) bool {
 	isPresent, err := cmd.Flags().GetBool(flagName)
 	if err != nil {
@@ -60,6 +61,7 @@ func flagPresent(cmd *cobra.Command, flagName string) bool {
 	return isPresent
 }
 
+// Cobra root command — this is the entrypoint for the CLI
 var rootCmd = &cobra.Command{
 	Use:   "sh <(curl https://marx.sh)",
 	Short: "Install my default packages and dotfiles",
@@ -77,6 +79,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute the root command
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -84,6 +87,7 @@ func Execute() {
 	}
 }
 
+// Add flags to the root command
 func init() {
 	rootCmd.Flags().BoolP("full", "", false, "Full system config")
 	rootCmd.Flags().BoolP("tmp", "", false, "Only temporarily install selection(s)")
