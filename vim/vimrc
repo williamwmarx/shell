@@ -183,7 +183,7 @@ Plug 'github/copilot.vim'  "GitHub CoPilot
 call plug#end()
 
 " -------------------------- Plugin-Specific Settings -------------------------
-if empty(glob('$HOME/.vim/plugged/vim-code-dark'))	"Check if vim-code-dark exists
+if !empty(glob('$HOME/.vim/plugged/vim-code-dark'))	"Check if vim-code-dark exists
 	colorscheme codedark  "VSCode-like colorscheme
 endif
 
