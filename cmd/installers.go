@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -26,14 +26,13 @@ func download(path string) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Read text from body and return
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	// Return resp.Body as bytes
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
-	return body
+	return b
 }
 
 // Create curl download command text given relative path in this repo and output path
@@ -291,8 +290,16 @@ func vimConfig() []action {
 	// Get and save vimrc
 	curlVimrc := getCurlDownloadCommand("vim/vimrc", "~/.vimrc")
 	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
+
 	// Get and save template files
-	files, _ := ioutil.ReadDir("vim/templates")
+	dir, err := os.Open("vim/templates")
+	if err != nil {
+		log.Fatal(err)
+	}
+	files, err := dir.Readdir(-1)
+	if err != nil {
+		log.Fatal(err)
+	}
 	for _, file := range files {
 		// Write each file to ~/.vim/templates
 		curlSkeletonFile := getCurlDownloadCommand(fmt.Sprintf("vim/templates/%s", file.Name()), fmt.Sprintf("~/.vim/templates/%s", file.Name()))
