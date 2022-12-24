@@ -183,7 +183,9 @@ Plug 'github/copilot.vim'  "GitHub CoPilot
 call plug#end()
 
 " -------------------------- Plugin-Specific Settings -------------------------
-colorscheme codedark  "VSCode-like colorscheme
+if empty(glob('$HOME/.vim/plugged/vim-code-dark'))	"Check if vim-code-dark exists
+	colorscheme codedark  "VSCode-like colorscheme
+endif
 
 " ------------------------------- Code Completion -----------------------------
 if executable('node')  "Only set coc options if node is installed
