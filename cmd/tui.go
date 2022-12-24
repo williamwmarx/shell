@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Styes for the TUI
 var (
 	titleStyle         = lipgloss.NewStyle().MarginLeft(2).Bold(true).Foreground(lipgloss.Color("170"))
 	itemStyle          = lipgloss.NewStyle().PaddingLeft(4)
@@ -24,21 +25,26 @@ var (
 	checkMark          = lipgloss.NewStyle().Foreground(lipgloss.Color("42")).SetString("✓")
 )
 
+// Store shell command to run and the name to display when running it
 type action struct {
 	command string
 	name    string
 }
 
+// List item
 type item string
 
+// FilterValue is required by the list.Item interface.
 func (i item) FilterValue() string { return "" }
 
+// itemDelegate is required by the list.Model interface.
 type itemDelegate struct{}
 
 func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
 func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	// Render the list item
 	i, ok := listItem.(item)
 	if !ok {
 		return
@@ -56,6 +62,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fmt.Fprint(w, fn(str))
 }
 
+// Bubble Tea model
 type model struct {
 	list             list.Model
 	actions          []action
@@ -66,10 +73,12 @@ type model struct {
 	quitting         bool
 }
 
+// Initialize the model
 func (m model) Init() tea.Cmd {
 	return nil
 }
 
+// Update the model when a message is received
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -80,6 +89,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// If actions are present, run them
 	if len(m.actions) > 1 {
 		if m.firstFlagInstall {
 			m.firstFlagInstall = false
@@ -87,9 +97,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return updateChosen(msg, m)
 	}
+	// Otherwise, show the list of choices
 	return updateChoices(msg, m)
 }
 
+// Select a choice from the list and add corresponding actions to the queue
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -129,17 +141,17 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// Run the next action in the queue
 func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case completedActionsMsg:
-		if m.index >= len(m.actions)-1 {
+		m.index++
+		if m.index >= len(m.actions) {
 			m.done = true
 			return m, tea.Quit
 		}
-
-		m.index++
 		return m, tea.Batch(
-			tea.Printf("%s %s", checkMark, m.actions[m.index].name),
+			tea.Printf("%s %s", checkMark, m.actions[m.index-1].name),
 			runAction(m.actions[m.index]),
 		)
 	case spinner.TickMsg:
@@ -150,6 +162,7 @@ func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// Change view based on model status
 func (m model) View() string {
 	if m.quitting {
 		return quitTextStyle.Render("Cancelling configuration 😔")
@@ -160,20 +173,24 @@ func (m model) View() string {
 	return choicesView(m)
 }
 
+// View for the list of choices
 func choicesView(m model) string {
 	return "\n" + m.list.View()
 }
 
+// View for the current action
 func chosenView(m model) string {
 	if m.done {
-		return quitTextStyle.Render("All tasks complete 😊")
+		lastPackageComplete := fmt.Sprintf("%s %s\n", checkMark, m.actions[m.index-1].name)
+		return lastPackageComplete + quitTextStyle.Render("All tasks complete 😊")
 	}
 	info := currentActionStyle.Render(m.actions[m.index].name)
-	return fmt.Sprintf("%s%s (%d/%d)", m.spinner.View(), info, m.index, len(m.actions)-1)
+	return fmt.Sprintf("%s%s (%d/%d)", m.spinner.View(), info, m.index+1, len(m.actions))
 }
 
 type completedActionsMsg string
 
+// Run a command and return a message when it's done
 func runAction(a action) tea.Cmd {
 	return tea.Tick(time.Millisecond*0, func(t time.Time) tea.Msg {
 		runCommand(a.command)
@@ -191,6 +208,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+// Run the TUI
 func tui(tuiOptions []string) {
 	tuiOptions = append([]string{""}, tuiOptions...)
 
@@ -200,11 +218,13 @@ func tui(tuiOptions []string) {
 	s.Style = lipgloss.NewStyle().Bold(true)
 
 	// List of actions
-	actions := []action{{"echo -n", ""}}
+	actions := []action{}
 
 	if len(tuiOptions) > 1 {
 		// Options passed, run without TUI list selector
-		if contains(tuiOptions, "tmux") {
+		if contains(tuiOptions, "full") {
+			actions = append(actions, fullConfig()...)
+		} else if contains(tuiOptions, "tmux") {
 			actions = append(actions, tmuxConfig()...)
 		} else if contains(tuiOptions, "tmux temporary") {
 			// TODO: tmux temporary
@@ -232,14 +252,15 @@ func tui(tuiOptions []string) {
 		item("Zsh/Oh My Zsh config"),
 		item("Vim + plugins config"),
 		item("tmux config"),
-		item("[TMP] Zsh config (no plugins)"),
-		item("[TMP] Vim config (no plugins)"),
+		item("Temporary Zsh config (no plugins)"),
+		item("Temporary Vim config (no plugins)"),
 		item("Core packages"),
 		item("Design packages"),
 		item("Core GUI packages"),
 		item("Design GUI packages"),
 	}
 
+	// Setup list
 	l := list.New(items, itemDelegate{}, 25, len(items)+6)
 	l.Title = "Hi 👋 Let's set up your shell"
 	l.SetShowStatusBar(false)
@@ -248,8 +269,10 @@ func tui(tuiOptions []string) {
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 
+	// Setup model
 	m := model{list: l, spinner: s, actions: actions, firstFlagInstall: len(actions) > 1}
 
+	// Run the program
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)

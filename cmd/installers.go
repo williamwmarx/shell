@@ -212,8 +212,7 @@ func installActions(packageGroups ...string) []action {
 
 		// Configure package install actions
 		for _, packToInstall := range packagesToInstall {
-			systemPackageName := getPackageInstallCmd(packToInstall, pm)
-			packageInstallActions = append(packageInstallActions, action{fmt.Sprintf("%s %s", pm.installCmd, systemPackageName), fmt.Sprintf("Installing %s", packToInstall.Name)})
+			packageInstallActions = append(packageInstallActions, action{getPackageInstallCmd(packToInstall, pm), fmt.Sprintf("Installing %s", packToInstall.Name)})
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 
 // Potential install options
 type Options struct {
+	full       bool
 	tmp        bool
 	tmux       bool
 	vim        bool
@@ -44,6 +45,10 @@ func runRoot(options Options) {
 	} else if options.zsh {
 		tuiOptions = append(tuiOptions, "zsh")
 	}
+	// Full system config?
+	if options.full {
+		tuiOptions = []string{"full"}
+	}
 	tui(tuiOptions)
 }
 
@@ -60,10 +65,13 @@ var rootCmd = &cobra.Command{
 	Short: "Install my default packages and dotfiles",
 	Run: func(cmd *cobra.Command, args []string) {
 		options := Options{
-			tmp:  flagPresent(cmd, "tmp"),
-			tmux: flagPresent(cmd, "tmux"),
-			vim:  flagPresent(cmd, "vim"),
-			zsh:  flagPresent(cmd, "zsh"),
+			full:       flagPresent(cmd, "full"),
+			tmp:        flagPresent(cmd, "tmp"),
+			tmux:       flagPresent(cmd, "tmux"),
+			vim:        flagPresent(cmd, "vim"),
+			vanillaVim: flagPresent(cmd, "vanilla-vim"),
+			zsh:        flagPresent(cmd, "zsh"),
+			vanillaZsh: flagPresent(cmd, "vanilla-zsh"),
 		}
 		runRoot(options)
 	},
@@ -77,10 +85,11 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.Flags().BoolP("full", "", false, "Full system config")
 	rootCmd.Flags().BoolP("tmp", "", false, "Only temporarily install selection(s)")
 	rootCmd.Flags().BoolP("tmux", "", false, "Install tmux and configuration files")
 	rootCmd.Flags().BoolP("vim", "", false, "Install vim and configuration files")
-	rootCmd.Flags().BoolP("zsh", "", false, "Install zsh and configuration files")
 	rootCmd.Flags().BoolP("vanilla-vim", "", false, "Install vim and configuration files without plugins")
+	rootCmd.Flags().BoolP("zsh", "", false, "Install zsh and configuration files")
 	rootCmd.Flags().BoolP("vanilla-zsh", "", false, "Install zsh and configuration files without plugins")
 }
