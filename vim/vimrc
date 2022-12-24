@@ -174,7 +174,9 @@ Plug 'ap/vim-css-color'  "CSS Color highlighter
 Plug 'google/vim-maktaba'  "Dependency of google/vim-codefmt
 Plug 'google/vim-codefmt'  "Auto-format code
 Plug 'google/vim-glaive'	"Dependency of google/vim-codefmt
-Plug 'neoclide/coc.nvim', {'branch': 'release'}  "Code completion
+if executable('node')  "Only install coc if node is installed
+	Plug 'neoclide/coc.nvim', {'branch': 'release'}  "Code completion
+endif
 Plug 'airblade/vim-gitgutter'  "Git status in the gutter
 Plug 'Yggdroot/indentLine'  "Vertical indent lines
 Plug 'github/copilot.vim'  "GitHub CoPilot
@@ -184,18 +186,20 @@ call plug#end()
 colorscheme codedark  "VSCode-like colorscheme
 
 " ------------------------------- Code Completion -----------------------------
-"Tab trigger completion
-inoremap <silent><expr> <TAB>
-	\ coc#pum#visible() ? coc#pum#next(1) :
-	\ CheckBackspace() ? "\<Tab>" :
-	\ coc#refresh()
-inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+if executable('node')  "Only set coc options if node is installed
+	"Tab trigger completion
+	inoremap <silent><expr> <TAB>
+		\ coc#pum#visible() ? coc#pum#next(1) :
+		\ CheckBackspace() ? "\<Tab>" :
+		\ coc#refresh()
+	inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
 
-"<CR> accept completion
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-	\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+	"<CR> accept completion
+	inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+		\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
-function! CheckBackspace() abort
-	let col = col('.') - 1
-	return !col || getline('.')[col - 1]	=~# '\s'
-endfunction
+	function! CheckBackspace() abort
+		let col = col('.') - 1
+		return !col || getline('.')[col - 1]	=~# '\s'
+	endfunction
+endif
