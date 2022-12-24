@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"time"
 
@@ -22,8 +23,6 @@ var (
 	currentActionStyle = lipgloss.NewStyle().Bold(true)
 	checkMark          = lipgloss.NewStyle().Foreground(lipgloss.Color("42")).SetString("✓")
 )
-
-func blankFunc(b bool) {}
 
 type action struct {
 	command string
@@ -84,7 +83,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if len(m.actions) > 1 {
 		if m.firstFlagInstall {
 			m.firstFlagInstall = false
-			return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
+			return m, tea.Batch(runAction(m.actions[m.index]), m.spinner.Tick)
 		}
 		return updateChosen(msg, m)
 	}
@@ -120,7 +119,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				case "Design GUI packages":
 					m.actions = append(m.actions, installActions("GuiDesign")...)
 				}
-				return m, tea.Batch(downloadAndInstall(m.actions[m.index]), m.spinner.Tick)
+				return m, tea.Batch(runAction(m.actions[m.index]), m.spinner.Tick)
 			}
 			return m, tea.Quit
 		}
@@ -141,7 +140,7 @@ func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.index++
 		return m, tea.Batch(
 			tea.Printf("%s %s", checkMark, m.actions[m.index].name),
-			downloadAndInstall(m.actions[m.index]),
+			runAction(m.actions[m.index]),
 		)
 	case spinner.TickMsg:
 		var cmd tea.Cmd
@@ -169,15 +168,13 @@ func chosenView(m model) string {
 	if m.done {
 		return quitTextStyle.Render("All tasks complete 😊")
 	}
-
-	info := currentActionStyle.Render("Installing " + m.actions[m.index].name)
-
+	info := currentActionStyle.Render(m.actions[m.index].name)
 	return fmt.Sprintf("%s%s (%d/%d)", m.spinner.View(), info, m.index, len(m.actions)-1)
 }
 
 type completedActionsMsg string
 
-func downloadAndInstall(a action) tea.Cmd {
+func runAction(a action) tea.Cmd {
 	return tea.Tick(time.Millisecond*0, func(t time.Time) tea.Msg {
 		runCommand(a.command)
 		return completedActionsMsg(a.name)
@@ -202,8 +199,9 @@ func tui(tuiOptions []string) {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Bold(true)
 
-	// Action actions
-	actions := []action{}
+	// List of actions
+	actions := []action{{"echo -n", ""}}
+
 	if len(tuiOptions) > 1 {
 		// Options passed, run without TUI list selector
 		if contains(tuiOptions, "tmux") {
@@ -222,6 +220,9 @@ func tui(tuiOptions []string) {
 			// TODO: vanilla-zsh
 		} else if contains(tuiOptions, "vanilla-zsh temporary") {
 			// TODO: vanilla-zsh temporary
+		} else {
+			log.Fatal("Invalid option")
+			os.Exit(1)
 		}
 	}
 

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"reflect"
 	"runtime"
@@ -35,6 +36,11 @@ func download(path string) []byte {
 	return body
 }
 
+// Create curl download command text given relative path in this repo and output path
+func getCurlDownloadCommand(repoPath, outputPath string) string {
+	return fmt.Sprintf("curl -fsSLo %s https://raw.githubusercontent.com/williamwmarx/shell/main/%s", outputPath, repoPath)
+}
+
 // Check if a command exists on the system
 func commandExists(commandName string) bool {
 	_, err := exec.LookPath(commandName)
@@ -43,11 +49,18 @@ func commandExists(commandName string) bool {
 
 // Run a system command
 func runCommand(command string) {
-	args := strings.Fields(command)
-	cmd := exec.Command(args[0], args[1:]...)
-	err := cmd.Run()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
+	}
+	for _, c := range strings.Split(command, "&&") {
+		args := strings.Fields(strings.ReplaceAll(strings.TrimSpace(c), "~", home))
+		cmd := exec.Command(args[0], args[1:]...)
+		err := cmd.Run()
+		if err != nil {
+			fmt.Printf("\n\n---%s---\n\n", cmd)
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -111,16 +124,6 @@ type packageManager struct {
 	name       string
 	installCmd string
 	updateCmd  string
-}
-
-// Install a package
-func (pm *packageManager) install(packageName string) {
-	runCommand(fmt.Sprintf("%s %s", pm.installCmd, packageName))
-}
-
-// Update pacakge manager
-func (pm *packageManager) update() {
-	runCommand(pm.updateCmd)
 }
 
 // Get system pacakge manager install command
@@ -190,9 +193,6 @@ func installActions(packageGroups ...string) []action {
 	packageInstallActions := []action{}
 
 	if len(packageGroups) > 0 {
-		// Update package manager
-		pm.update()
-
 		// Gather packages to install
 		var packagesToInstall []pkg
 		for _, packageGroup := range packageGroups {
@@ -206,7 +206,7 @@ func installActions(packageGroups ...string) []action {
 			case "GuiDesign":
 				packagesToInstall = append(packagesToInstall, getPackagesFromGroup(packages.Design)...)
 			default:
-				log.Fatal(fmt.Sprintf("Package group \"%s\" is not valid", packageGroup))
+				log.Fatalf("Package group \"%s\" is not valid", packageGroup)
 			}
 		}
 
@@ -220,9 +220,73 @@ func installActions(packageGroups ...string) []action {
 	return packageInstallActions
 }
 
+////////////////////////////
+//	SPECIFIC INSTALLERS   //
+////////////////////////////
+
+func ohmyzshInstallCmd() string {
+	return "curl -fsSLo ~/install-oh-my-zsh.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && sh ~/install-oh-my-zsh.sh --unattended && rm ~/install-oh-my-zsh.sh"
+}
+
+func tmuxConfig() []action {
+	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
+	// Install tmux
+	tmuxInstallCmd := getPackageInstallCmd(getPackage("tmux", packages), pm)
+	actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
+	// Get and save tmux.conf
+	curlTmuxConf := getCurlDownloadCommand("tmux/tmux.conf", "~/.tmux.conf")
+	actionsToRun = append(actionsToRun, action{curlTmuxConf, "Saving tmux.conf"})
+	return actionsToRun
+}
+
+func vimConfig() []action {
+	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
+	// Install Vim
+	vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
+	actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
+	// Install Node
+	nodeInstallCmd := getPackageInstallCmd(getPackage("Node", packages), pm)
+	actionsToRun = append(actionsToRun, action{nodeInstallCmd, "Installing node"})
+	// Get and save vimrc
+	curlVimrc := getCurlDownloadCommand("vim/vimrc", "~/.vimrc")
+	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
+	// Get and save template files
+	files, _ := ioutil.ReadDir("vim/templates")
+	for _, file := range files {
+		// Write each file to ~/.vim/templates
+		curlSkeletonFile := getCurlDownloadCommand(fmt.Sprintf("vim/templates/%s", file.Name()), fmt.Sprintf("~/.vim/templates/%s", file.Name()))
+		actionsToRun = append(actionsToRun, action{fmt.Sprintf("mkdir -p ~/.vim/templates && %s", curlSkeletonFile), fmt.Sprintf("Saving %s", file.Name())})
+	}
+	// Install plugins
+	actionsToRun = append(actionsToRun, action{"vim +PlugInstall +qall", "Installing vim plugins"})
+	return actionsToRun
+}
+
+func zshConfig() []action {
+	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
+	// Install zsh
+	zshInstallCmd := getPackageInstallCmd(getPackage("Zsh", packages), pm)
+	actionsToRun = append(actionsToRun, action{zshInstallCmd, "Installing zsh"})
+	// Install oh-my-zsh non-interactively
+	actionsToRun = append(actionsToRun, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
+	// Get and save zshrc
+	curlZshrc := getCurlDownloadCommand("zsh/zshrc", "~/.zshrc")
+	actionsToRun = append(actionsToRun, action{curlZshrc, "Saving zshrc"})
+	// Get and save aliases
+	curlAliases := getCurlDownloadCommand("zsh/aliases", "~/.aliases")
+	actionsToRun = append(actionsToRun, action{curlAliases, "Saving aliases"})
+	// Get and save functions
+	curlFunctions := getCurlDownloadCommand("zsh/functions", "~/.functions")
+	actionsToRun = append(actionsToRun, action{curlFunctions, "Saving functions"})
+	// Get and save t3.zsh-theme
+	curlT3Theme := getCurlDownloadCommand("zsh/t3.zsh-theme", "~/.oh-my-zsh/themes/t3.zsh-theme")
+	actionsToRun = append(actionsToRun, action{curlT3Theme, "Saving t3.zsh-theme"})
+	return actionsToRun
+}
+
 // Full config/install
 func fullConfig() []action {
-	actionsToRun := []action{}
+	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install homebrew if necessary
 	if runtime.GOOS == "darwin" && !commandExists("brew") {
 		brewInstallCommand := "NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
@@ -236,7 +300,7 @@ func fullConfig() []action {
 	actionsToRun = append(actionsToRun, installActions("GuiDesign")...)
 
 	// Install oh-my-zsh
-	actionsToRun = append(actionsToRun, action{"sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended", "Installing oh-my-zsh"})
+	actionsToRun = append(actionsToRun, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 
 	// Clone this repo into home directory
 	actionsToRun = append(actionsToRun, action{"git clone https://github.com/williamwmarx/shell ~/.shell", "Cloning shell repo"})
@@ -257,62 +321,5 @@ func fullConfig() []action {
 	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/functions ~/.functions", "Creating functions symlink"})
 	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/t3.zsh-theme ~/.oh-my-zsh/themes/t3.zsh-theme", "Creating t3.zsh-theme symlink"})
 
-	return actionsToRun
-}
-
-////////////////////////////
-//	SPECIFIC INSTALLERS   //
-////////////////////////////
-
-func tmuxConfig() []action {
-	actionsToRun := []action{}
-	// Install tmux
-	tmuxInstallCmd := getPackageInstallCmd(getPackage("tmux", packages), pm)
-	actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
-	// Get and save tmux.conf
-	tmuxConf := download("tmux/tmux.conf")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.tmux.conf", tmuxConf), "Saving tmux.conf"})
-	return actionsToRun
-}
-
-func vimConfig() []action {
-	actionsToRun := []action{}
-	// Install Vim
-	vimInstallCmd := getPackageInstallCmd(getPackage("vim", packages), pm)
-	actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
-	// Get and save vimrc
-	vimrc := download("vim/vimrc")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.vimrc && mkdir -p ~/.vim", vimrc), "Saving vimrc"})
-	// Get and save template files
-	files, _ := ioutil.ReadDir("vim/templates")
-	for _, file := range files {
-		// Write each file to ~/.vim/templates
-		skeletonFile := download(fmt.Sprintf("vim/templates/%s", file.Name()))
-		actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.vim/templates/%s", skeletonFile, file.Name()), fmt.Sprintf("Saving %s", file.Name())})
-	}
-	// Install plugins
-	actionsToRun = append(actionsToRun, action{"vim +PlugInstall +qall", "Installing vim plugins"})
-	return actionsToRun
-}
-
-func zshConfig() []action {
-	actionsToRun := []action{}
-	// Install zsh
-	zshInstallCmd := getPackageInstallCmd(getPackage("zsh", packages), pm)
-	actionsToRun = append(actionsToRun, action{zshInstallCmd, "Installing zsh"})
-	// Install oh-my-zsh non-interactively
-	actionsToRun = append(actionsToRun, action{"sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended", "Installing oh-my-zsh"})
-	// Get and save zshrc
-	zshrc := download("zsh/zshrc")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.zshrc", zshrc), "Saving zshrc"})
-	// Get and save aliases
-	aliases := download("zsh/aliases")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.aliases", aliases), "Saving aliases"})
-	// Get and save functions
-	functions := download("zsh/functions")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.functions", functions), "Saving functions"})
-	// Get and save t3.zsh-theme
-	t3Theme := download("zsh/t3.zsh-theme")
-	actionsToRun = append(actionsToRun, action{fmt.Sprintf("echo \"%s\" > ~/.oh-my-zsh/themes/t3.zsh-theme", t3Theme), "Saving t3.zsh-theme"})
 	return actionsToRun
 }
