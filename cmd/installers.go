@@ -243,9 +243,6 @@ func vimConfig() []action {
 	// Install Vim
 	vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
 	actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
-	// Install Node
-	nodeInstallCmd := getPackageInstallCmd(getPackage("Node", packages), pm)
-	actionsToRun = append(actionsToRun, action{nodeInstallCmd, "Installing node"})
 	// Get and save vimrc
 	curlVimrc := getCurlDownloadCommand("vim/vimrc", "~/.vimrc")
 	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
