@@ -48,6 +48,13 @@ brew_name = "gnupg"
 dnf_name = "gnupg"
 pacman_name = "gnupg"
 
+[core.node]
+name = "Node"
+apt_name = "nodejs"
+brew_name = "node"
+dnf_name = "nodejs"
+pacman_name = "nodejs"
+
 [core.openssl]
 name = "OpenSSL"
 apt_name = "openssl"
