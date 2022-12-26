@@ -1,14 +1,34 @@
-[init]
-	defaultBranch = main
+[alias]
+	# View abbreviated SHA, description, and history graph of the latest 20 commits
+	l = log --pretty=oneline -n 20 --graph --abbrev-commit
 
-[user]
-	email = m94@marx.sh
-	name = William W. Marx
-	signingkey = C97084827DFFF57E
+	# Show the diff between the latest commit and the current state
+	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+
+	# Show verbose output about tags, branches or remotes
+	tags = tag -l
+	branches = branch -a
+	remotes = remote -v
+
+	# Remove the old tag with this name and tag the latest commit with it.
+	retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
+
+	# List contributors with number of commits
+	contributors = shortlog --summary --numbered
 
 [commit]
+	# Sign commits by default
 	gpgSign = true
 
+[diff]
+	# Detect copies as well as renames
+	renames = copies
+
+[init]
+	# Use the default branch name "main" instead of "master"
+	defaultBranch = main
+
+# URL replacements
 [url "https://github.com/"]
 	insteadOf = "gh:"
 
@@ -20,3 +40,10 @@
 
 [url "https://github.com/cwdt-us/"]
 	insteadOf = "cwdt:"
+
+[user]
+	# My git info
+	email = m94@marx.sh
+	name = William W. Marx
+	signingkey = C97084827DFFF57E
+
