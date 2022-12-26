@@ -41,6 +41,7 @@ func tmuxConfig(temporary bool) []action {
 	return actions
 }
 
+// Install vim, vimrc, templates, and plugins
 func vimConfig() []action {
 	actions := []action{{pm.updateCmd, "Updating package manager"}}
 
@@ -74,6 +75,7 @@ func vimConfig() []action {
 	return actions
 }
 
+// Install vim for temporary use on another machine
 func vanillaVimConfig(temporary bool) []action {
 	var actions []action
 
@@ -109,10 +111,12 @@ func vanillaVimConfig(temporary bool) []action {
 	return actions
 }
 
+// Long command to install oh-my-zsh non-interactively
 func ohmyzshInstallCmd() string {
 	return "curl -fsSLo ~/install-oh-my-zsh.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && sh ~/install-oh-my-zsh.sh --unattended && rm ~/install-oh-my-zsh.sh"
 }
 
+// Install zsh, oh-my-zsh, zshrc and other zsh config files
 func zshConfig() []action {
 	actions := []action{{pm.updateCmd, "Updating package manager"}}
 	actions = append(actions, action{pm.installCommand(packages.packageByName("Zsh")), "Installing zsh"})
@@ -125,6 +129,7 @@ func zshConfig() []action {
 	return actions
 }
 
+// Install zsh for temporary use on another machine
 func vanillaZshConfig(temporary bool) []action {
 	var actions []action
 
