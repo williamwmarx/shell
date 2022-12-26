@@ -27,11 +27,14 @@ func download(path string) []byte {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
-	// Return resp.Body as bytes
+
+	// Read body
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	// Return bytes
 	return b
 }
 
@@ -48,12 +51,16 @@ func commandExists(commandName string) bool {
 
 // Run a system command
 func runCommand(command string) {
+	// Get home directory, and replace all instances of ~ with it
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
+	command = strings.ReplaceAll(command, "~", home)
+
+	// Split commands by && and run each one
 	for _, c := range strings.Split(command, "&&") {
-		args := strings.Fields(strings.ReplaceAll(strings.TrimSpace(c), "~", home))
+		args := strings.Fields(strings.TrimSpace(c))
 		cmd := exec.Command(args[0], args[1:]...)
 		err := cmd.Run()
 		if err != nil {
@@ -408,7 +415,9 @@ func vanillaZshConfig(temporary bool) []action {
 
 // Full config/install
 func fullConfig() []action {
+	// First, update the package manaer
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
+
 	// Install homebrew if necessary
 	if runtime.GOOS == "darwin" && !commandExists("brew") {
 		brewInstallCommand := "NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
@@ -418,30 +427,54 @@ func fullConfig() []action {
 	// Install packages
 	actionsToRun = append(actionsToRun, installActions("Core")...)
 	actionsToRun = append(actionsToRun, installActions("Design")...)
-	actionsToRun = append(actionsToRun, installActions("GuiCore")...)
-	actionsToRun = append(actionsToRun, installActions("GuiDesign")...)
+
+	// If on Ubuntu, alias fd to fdfind
+	if runtime.GOOS == "linux" {
+		runCommand("ln -sf /usr/bin/fdfind /usr/local/bin/fd")
+	}
+
+	// Install GUI apps if on macOS
+	if runtime.GOOS == "darwin" {
+		actionsToRun = append(actionsToRun, installActions("GuiCore")...)
+		actionsToRun = append(actionsToRun, installActions("GuiDesign")...)
+	}
 
 	// Install oh-my-zsh
 	actionsToRun = append(actionsToRun, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 
 	// Clone this repo into home directory
-	actionsToRun = append(actionsToRun, action{"git clone https://github.com/williamwmarx/shell ~/.shell", "Cloning shell repo"})
+	actionsToRun = append(actionsToRun, action{"git clone https://github.com/williamwmarx/shell.git ~/.shell", "Cloning shell repo"})
 
 	// Create symlinks
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/git/gitconfig ~/.gitconfig", "Creating gitconfig symlink"})
-	actionsToRun = append(actionsToRun, action{"mkdir -p ~/.gnupg && ln -s ~/.shell/gnupg/gpg-agent.conf ~/.gnupg/gpg-agent.conf", "Creating gpg-agent.conf symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/gnupg/gpg.conf ~/.gnupg/gpg.conf", "Creating gpg.conf symlink"})
-	actionsToRun = append(actionsToRun, action{"mkdir -p ~/.raycast && ln -s ~/.shell/raycast/clear-format ~/.raycast/clear-format", "Creating Raycast clear-format script symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/raycast/expand-url ~/.raycast/expand-url", "Creating Raycast expand-url script symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/skhd/skhdrc ~/.skhdrc", "Creating skhdrc symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/tmux/tmux.conf ~/.tmux.conf", "Creating tmux.conf symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/vim/vimrc ~/.vimrc", "Creating vimrc symlink"})
-	actionsToRun = append(actionsToRun, action{"mkdir -p ~/.vim/templates && ln -s ~/.shell/vim/tempaltes/skeleton.py ~/.vim/templates/skeleton.py && ln -s ~/.shell/vim/tempaltes/skeleton.sh ~/.vim/templates/skeleton.sh", "Creating vim skeleton symlinks"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/yabai/yabairc ~/.yabairc", "Creating yabairc symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/zshrc ~/.zshrc", "Creating zshrc symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/aliases ~/.aliases", "Creating aliases symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/functions ~/.functions", "Creating functions symlink"})
-	actionsToRun = append(actionsToRun, action{"ln -s ~/.shell/zsh/t3.zsh-theme ~/.oh-my-zsh/themes/t3.zsh-theme", "Creating t3.zsh-theme symlink"})
+	symlinks := map[string]string{
+		"ln -sf ~/.shell/git/gitconfig ~/.gitconfig":                                                        "Creating gitconfig symlink",
+		"mkdir -p ~/.gnupg && fd . ~/.shell/gnupg -x ln -sf {} ~/.gnupg/{/}":                                "Creating GPG symlinks",
+		"ln -sf ~/.shell/tmux/tmux.conf ~/.tmux.conf":                                                       "Creating tmux.conf symlink",
+		"ln -sf ~/.shell/vim/vimrc ~/.vimrc":                                                                "Creating vimrc symlink",
+		"mkdir -p ~/.vim/templates && fd . ~/.shell/vim/templates -x ln -sf {} ~/.vim/templates/{/}":        "Creating vim skeleton symlinks",
+		"ln -sf ~/.shell/zsh/zshrc ~/.zshrc":                                                                "Creating zshrc symlink",
+		"ln -sf ~/.shell/zsh/aliases ~/.aliases":                                                            "Creating aliases symlink",
+		"ln -sf ~/.shell/zsh/functions ~/.functions":                                                        "Creating functions symlink",
+		"mkdir -p ~/.oh-my-zsh/themes && ln -sf ~/.shell/zsh/t3.zsh-theme ~/.oh-my-zsh/themes/t3.zsh-theme": "Creating t3.zsh-theme symlink",
+	}
+
+	// If on macOS, create macOS-specific symlinks
+	if runtime.GOOS == "darwin" {
+		macOSSymlinks := map[string]string{
+			"mkdir -p ~/.raycast && fd . ~/.shell/raycast -x ln -sf {} ~/.raycast{/}": "Creating Raycast shell script symlinks",
+			"ln -sf ~/.shell/skhd/skhdrc ~/.skhdrc":                                   "Creating skhdrc symlink",
+			"ln -sf ~/.shell/yabai/yabairc ~/.yabairc":                                "Creating yabairc symlink",
+		}
+		// Append macOSSymlinks to symlinks
+		for symlink, message := range macOSSymlinks {
+			symlinks[symlink] = message
+		}
+	}
+
+	// Append symlinks to actionsToRun
+	for symlink, message := range symlinks {
+		actionsToRun = append(actionsToRun, action{symlink, message})
+	}
 
 	return actionsToRun
 }
