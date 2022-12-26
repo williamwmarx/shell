@@ -1,6 +1,8 @@
 # Core packages
 [core.bat]
 name = "bat"
+description = "A cat clone with wings."
+url = "https://github.com/sharkdp/bat"
 apt_name = "bat"
 brew_name = "bat"
 dnf_name = "bat"
@@ -8,6 +10,8 @@ pacman_name = "bat"
 
 [core.curl]
 name = "cURL"
+description = "A command line tool for transferring data with URL syntax."
+url = "https://curl.se/"
 apt_name = "curl"
 brew_name = "curl"
 dnf_name = "curl"
@@ -15,6 +19,8 @@ pacman_name = "curl"
 
 [core.exa]
 name = "exa"
+description = "A modern replacement for ls."
+url = "https://the.exa.website/"
 apt_name = "exa"
 brew_name = "exa"
 dnf_name = "exa"
@@ -22,6 +28,8 @@ pacman_name = "exa"
 
 [core.fd]
 name = "fd"
+description = "A simple, fast and user-friendly alternative to find."
+url = "https://github.com/sharkdp/fd"
 apt_name = "fd-find"
 brew_name = "fd"
 dnf_name = "fd-find"
@@ -29,6 +37,8 @@ pacman_name = "fd"
 
 [core.fzf]
 name = "fzf"
+description = "A command-line fuzzy finder."
+url = "https://github.com/junegunn/fzf"
 apt_name = "fzf"
 brew_name = "fzf"
 dnf_name = "fzf"
@@ -36,6 +46,8 @@ pacman_name = "fzf"
 
 [core.git]
 name = "git"
+description = "A fast, scalable, distributed revision control system."
+url = "https://git-scm.com/"
 apt_name = "git"
 brew_name = "git"
 dnf_name = "git"
@@ -43,6 +55,8 @@ pacman_name = "git"
 
 [core.gnupg]
 name = "GnuPG"
+description = "A complete and free implementation of the OpenPGP standard."
+url = "https://gnupg.org/"
 apt_name = "gnupg"
 brew_name = "gnupg"
 dnf_name = "gnupg"
@@ -50,6 +64,8 @@ pacman_name = "gnupg"
 
 [core.node]
 name = "Node"
+description = "A JavaScript runtime built on Chrome's V8 JavaScript engine."
+url = "https://nodejs.org/"
 apt_name = "nodejs"
 brew_name = "node"
 dnf_name = "nodejs"
@@ -57,6 +73,8 @@ pacman_name = "nodejs"
 
 [core.openssl]
 name = "OpenSSL"
+description = "A robust, commercial-grade, and full-featured toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols."
+url = "https://www.openssl.org/"
 apt_name = "openssl"
 brew_name = "openssl"
 dnf_name = "openssl"
@@ -64,6 +82,8 @@ pacman_name = "openssl"
 
 [core.ripgrep]
 name = "ripgrep"
+description = "A line-oriented search tool that recursively searches your current directory for a regex pattern."
+url = "https://github.com/BurntSushi/ripgrep"
 apt_name = "ripgrep"
 brew_name = "ripgrep"
 dnf_name = "ripgrep"
@@ -71,6 +91,8 @@ pacman_name = "ripgrep"
 
 [core.tmux]
 name = "tmux"
+description = "A terminal multiplexer."
+url = "https://github.com/tmux/tmux"
 apt_name = "tmux"
 brew_name = "tmux"
 dnf_name = "tmux"
@@ -78,6 +100,8 @@ pacman_name = "tmux"
 
 [core.vim]
 name = "Vim"
+description = "A highly configurable text editor built to enable efficient text editing."
+url = "https://www.vim.org/"
 apt_name = "vim"
 brew_name = "vim"
 dnf_name = "vim"
@@ -85,6 +109,8 @@ pacman_name = "vim"
 
 [core.zsh]
 name = "Zsh"
+description = "A shell designed for interactive use, although it is also a powerful scripting language."
+url = "https://www.zsh.org/"
 apt_name = "zsh"
 brew_name = "zsh"
 dnf_name = "zsh"
@@ -93,6 +119,8 @@ pacman_name = "zsh"
 # Design packages
 [design.ffmpeg]
 name = "FFmpeg"
+description = "A complete, cross-platform solution to record, convert and stream audio and video."
+url = "https://ffmpeg.org/"
 apt_name = "ffmpeg"
 brew_name = "ffmpeg"
 dnf_name = "ffmpeg-free"
@@ -101,57 +129,85 @@ pacman_name = "ffmpeg"
 # GUI Core apps
 [gui_core.clean_my_mac]
 name = "Clean My Mac"
+description = "A macOS app to clean up your Mac."
+url = "https://macpaw.com/cleanmymac"
 brew_cask_name = "cleanmymac"
 
 [gui_core.dropbox]
 name = "Dropbox"
+description = "A file hosting service that offers cloud storage, file synchronization, personal cloud."
+url = "https://www.dropbox.com/"
 brew_cask_name = "dropbox"
 
 [gui_core.docker]
 name = "Docker Desktop"
+description = "A desktop app for MacOS and Windows machines for the building and sharing of containerized applications and microservices."
+url = "https://www.docker.com/products/docker-desktop"
 brew_cask_name = "docker"
 
 [gui_core.iina]
 name = "IINA"
+description = "The modern video player for macOS."
+url = "https://iina.io/"
 brew_cask_name = "iina"
 
 [gui_core.iterm2]
 name = "iTerm2"
+description = "A terminal emulator for macOS that does amazing things."
+url = "https://iterm2.com/"
 brew_cask_name = "iterm2"
 
 [gui_core.little_snitch]
 name = "Little Snitch"
+description = "A firewall application for macOS that monitors outgoing network connections and allows or denies them."
+url = "https://www.obdev.at/products/littlesnitch/index.html"
 brew_cask_name = "little-snitch"
 
 [gui_core.mullvad]
 name = "Mullvad VPN"
+description = "A VPN service that helps keep your online activity, identity, and location private."
+url = "https://mullvad.net/en/"
 brew_cask_name = "mullvadvpn"
 
 [gui_core.parallels]
 name = "Parallels Desktop"
+description = "A software for running Windows, Linux, or any other operating system on a Mac without rebooting."
+url = "https://www.parallels.com/products/desktop/"
 brew_cask_name = "parallels"
 
 [gui_core.raycast]
 name = "Raycast"
+description = "A smart command line productivity tool for macOS."
+url = "https://raycast.com/"
 brew_cask_name = "raycast"
 
 [gui_core.zoom]
 name = "Zoom"
+description = "A video conferencing, online chat, and web conferencing software."
+url = "https://zoom.us/"
 brew_cask_name = "zoomus"
 
 # GUI Design apps
 [gui_design.adobe_cc]
 name = "Adobe Creative Cloud"
+description = "A collection of desktop and mobile apps and services for photography, design, video, web, UX and more."
+url = "https://www.adobe.com/creativecloud.html"
 brew_cask_name = "adobe-creative-cloud"
 
 [gui_design.glyphs]
 name = "Glyphs"
+description = "A powerful font editor for macOS."
+url = "https://glyphsapp.com/"
 brew_cask_name = "glyphs"
 
 [gui_design.rhino3d]
 name = "Rhino 3D"
+description = "A 3D modeling software for Windows, macOS, and Linux."
+url = "https://www.rhino3d.com/"
 brew_cask_name = "rhino"
 
 [gui_design.max_msp]
 name = "Cycling ’74 Max/MSP"
+description = "A visual programming language for music, audio, and multimedia."
+url = "https://cycling74.com/products/max/"
 brew_cask_name = "cycling74-max"
