@@ -126,6 +126,36 @@ type packageManager struct {
 	updateCmd    string
 }
 
+// Get package name
+func getPackageName(pack pkg) string {
+	var packageName string
+	switch pm.name {
+	case "apt":
+		packageName = pack.AptName
+	case "brew":
+		if reflect.ValueOf(&pack).Elem().FieldByName("BrewCaskName").String() != "" {
+			packageName = "--cask " + pack.BrewCaskName
+		} else {
+			packageName = pack.BrewName
+		}
+	case "dnf":
+		packageName = pack.DnfName
+	case "pacman":
+		packageName = pack.PacmanName
+	}
+	return packageName
+}
+
+// Get install command for a given package
+func (pm *packageManager) getInstallCommand(pack pkg) string {
+	return fmt.Sprintf("%s %s", pm.installCmd, getPackageName(pack))
+}
+
+// Get uninstall command for a given package
+func (pm *packageManager) getUninstallCommand(pack pkg) string {
+	return fmt.Sprintf("%s %s", pm.uninstallCmd, getPackageName(pack))
+}
+
 // Get system pacakge manager install command
 func getPackageManager() packageManager {
 	var pm packageManager
@@ -172,46 +202,6 @@ func getPackagesFromGroup(packageGroup map[string]pkg) []pkg {
 	return pacs
 }
 
-// Get install command for a package
-func getPackageInstallCmd(p pkg, pm packageManager) string {
-	var packageName string
-	switch pm.name {
-	case "apt":
-		packageName = p.AptName
-	case "brew":
-		if reflect.ValueOf(&p).Elem().FieldByName("BrewCaskName").String() != "" {
-			packageName = "--cask " + p.BrewCaskName
-		} else {
-			packageName = p.BrewName
-		}
-	case "dnf":
-		packageName = p.DnfName
-	case "pacman":
-		packageName = p.PacmanName
-	}
-	return fmt.Sprintf("%s %s", pm.installCmd, packageName)
-}
-
-// Get uninstall command for a package
-func getPackageUninstallCmd(p pkg, pm packageManager) string {
-	var packageName string
-	switch pm.name {
-	case "apt":
-		packageName = p.AptName
-	case "brew":
-		if reflect.ValueOf(&p).Elem().FieldByName("BrewCaskName").String() != "" {
-			packageName = "--cask " + p.BrewCaskName
-		} else {
-			packageName = p.BrewName
-		}
-	case "dnf":
-		packageName = p.DnfName
-	case "pacman":
-		packageName = p.PacmanName
-	}
-	return fmt.Sprintf("%s %s", pm.uninstallCmd, packageName)
-}
-
 // Handle the installing
 func installActions(packageGroups ...string) []action {
 	packageInstallActions := []action{}
@@ -236,7 +226,7 @@ func installActions(packageGroups ...string) []action {
 
 		// Configure package install actions
 		for _, packToInstall := range packagesToInstall {
-			packageInstallActions = append(packageInstallActions, action{getPackageInstallCmd(packToInstall, pm), fmt.Sprintf("Installing %s", packToInstall.Name)})
+			packageInstallActions = append(packageInstallActions, action{pm.getInstallCommand(packToInstall), fmt.Sprintf("Installing %s", packToInstall.Name)})
 		}
 	}
 
@@ -265,8 +255,7 @@ func tmuxConfig(temporary bool) []action {
 		// Update package manager
 		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
 		// Install tmux
-		tmuxInstallCmd := getPackageInstallCmd(getPackage("tmux", packages), pm)
-		actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
+		actionsToRun = append(actionsToRun, action{pm.getInstallCommand(getPackage("tmux", packages)), "Installing tmux"})
 	}
 	// Get and save tmux.conf
 	actionsToRun = append(actionsToRun, getCurlAction("tmux/tmux.conf", tmuxConfBasePath+"/.tmux.conf", "Saving tmux.conf"))
@@ -274,7 +263,7 @@ func tmuxConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !tmuxAlreadyExists {
-			uninstallCommands += getPackageUninstallCmd(getPackage("tmux", packages), pm) + " && "
+			uninstallCommands += pm.getUninstallCommand(getPackage("tmux", packages)) + " && "
 		}
 		uninstallCommands += "rm -rf ~/.shell.tmp"
 		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
@@ -285,8 +274,7 @@ func tmuxConfig(temporary bool) []action {
 func vimConfig() []action {
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install Vim
-	vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
-	actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
+	actionsToRun = append(actionsToRun, action{pm.getInstallCommand(getPackage("Vim", packages)), "Installing Vim"})
 	// Get and save vimrc
 	actionsToRun = append(actionsToRun, getCurlAction("vim/vimrc", "~/.vimrc", "Saving vimrc"))
 
@@ -318,8 +306,7 @@ func vanillaVimConfig(temporary bool) []action {
 		// Update package manager
 		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
 		// Install Vim
-		vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
-		actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
+		actionsToRun = append(actionsToRun, action{pm.getInstallCommand(getPackage("Vim", packages)), "Installing Vim"})
 	}
 	// Set vimrc path
 	vimrcPath := "~/.vimrc"
@@ -334,7 +321,7 @@ func vanillaVimConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !vimAlreadyExists {
-			uninstallCommands += getPackageUninstallCmd(getPackage("Vim", packages), pm) + " && "
+			uninstallCommands += pm.getUninstallCommand(getPackage("Vim", packages)) + " && "
 		}
 		uninstallCommands += "rm -rf ~/.shell.tmp"
 		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
@@ -345,8 +332,7 @@ func vanillaVimConfig(temporary bool) []action {
 func zshConfig() []action {
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install zsh
-	zshInstallCmd := getPackageInstallCmd(getPackage("Zsh", packages), pm)
-	actionsToRun = append(actionsToRun, action{zshInstallCmd, "Installing zsh"})
+	actionsToRun = append(actionsToRun, action{pm.getInstallCommand(getPackage("Zsh", packages)), "Installing Zsh"})
 	// Install oh-my-zsh non-interactively
 	actionsToRun = append(actionsToRun, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 	// Get and save zshrc
@@ -368,8 +354,7 @@ func vanillaZshConfig(temporary bool) []action {
 		// Update package manager
 		actionsToRun = append(actionsToRun, action{pm.updateCmd, "Updating package manager"})
 		// Install zsh
-		zshInstallCmd := getPackageInstallCmd(getPackage("Zsh", packages), pm)
-		actionsToRun = append(actionsToRun, action{zshInstallCmd, "Installing zsh"})
+		actionsToRun = append(actionsToRun, action{pm.getInstallCommand(getPackage("Zsh", packages)), "Installing Zsh"})
 	}
 	// Set zshrc path
 	zshBasePath := "~/.shell"
@@ -390,7 +375,7 @@ func vanillaZshConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !zshAlreadyExists {
-			uninstallCommands += getPackageUninstallCmd(getPackage("Zsh", packages), pm) + " && "
+			uninstallCommands += pm.getUninstallCommand(getPackage("Zsh", packages)) + " && "
 		}
 		uninstallCommands += "rm -rf ~/.shell.tmp"
 		actionsToRun = append(actionsToRun, action{uninstallCommands, "Saving uninstall script"})
