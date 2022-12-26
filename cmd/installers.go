@@ -36,8 +36,9 @@ func download(path string) []byte {
 }
 
 // Create curl download command text given relative path in this repo and output path
-func getCurlDownloadCommand(repoPath, outputPath string) string {
-	return fmt.Sprintf("curl -fsSLo %s https://raw.githubusercontent.com/williamwmarx/shell/main/%s", outputPath, repoPath)
+func getCurlAction(repoPath, outputPath, actionText string) action {
+	curlCommand := fmt.Sprintf("curl -fsSLo %s https://raw.githubusercontent.com/williamwmarx/shell/main/%s", outputPath, repoPath)
+	return action{curlCommand, actionText}
 }
 
 // Check if a command exists on the system
@@ -268,8 +269,7 @@ func tmuxConfig(temporary bool) []action {
 		actionsToRun = append(actionsToRun, action{tmuxInstallCmd, "Installing tmux"})
 	}
 	// Get and save tmux.conf
-	curlTmuxConf := getCurlDownloadCommand("tmux/tmux.conf", tmuxConfBasePath+"/.tmux.conf")
-	actionsToRun = append(actionsToRun, action{curlTmuxConf, "Saving tmux.conf"})
+	actionsToRun = append(actionsToRun, getCurlAction("tmux/tmux.conf", tmuxConfBasePath+"/.tmux.conf", "Saving tmux.conf"))
 	// Create uninstall script if temporary install
 	if temporary {
 		uninstallCommands := ""
@@ -288,8 +288,7 @@ func vimConfig() []action {
 	vimInstallCmd := getPackageInstallCmd(getPackage("Vim", packages), pm)
 	actionsToRun = append(actionsToRun, action{vimInstallCmd, "Installing vim"})
 	// Get and save vimrc
-	curlVimrc := getCurlDownloadCommand("vim/vimrc", "~/.vimrc")
-	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
+	actionsToRun = append(actionsToRun, getCurlAction("vim/vimrc", "~/.vimrc", "Saving vimrc"))
 
 	// Get and save template files
 	dir, err := os.Open("vim/templates")
@@ -300,10 +299,11 @@ func vimConfig() []action {
 	if err != nil {
 		log.Fatal(err)
 	}
+	runCommand("mkdir -p ~/.vim/templates")
 	for _, file := range files {
 		// Write each file to ~/.vim/templates
-		curlSkeletonFile := getCurlDownloadCommand(fmt.Sprintf("vim/templates/%s", file.Name()), fmt.Sprintf("~/.vim/templates/%s", file.Name()))
-		actionsToRun = append(actionsToRun, action{fmt.Sprintf("mkdir -p ~/.vim/templates && %s", curlSkeletonFile), fmt.Sprintf("Saving %s", file.Name())})
+		templateAction := getCurlAction(fmt.Sprintf("vim/templates/%s", file.Name()), fmt.Sprintf("~/.vim/templates/%s", file.Name()), fmt.Sprintf("Saving %s", file.Name()))
+		actionsToRun = append(actionsToRun, templateAction)
 	}
 	// Install plugins
 	actionsToRun = append(actionsToRun, action{"vim +PlugInstall +qall", "Installing vim plugins"})
@@ -329,8 +329,7 @@ func vanillaVimConfig(temporary bool) []action {
 		vimrcPath = "~/.shell.tmp/vimrc"
 	}
 	// Get and save vimrc
-	curlVimrc := getCurlDownloadCommand("vim/vanillaVimrc", vimrcPath)
-	actionsToRun = append(actionsToRun, action{curlVimrc, "Saving vimrc"})
+	actionsToRun = append(actionsToRun, getCurlAction("vim/vanillaVimrc", vimrcPath, "Saving vimrc"))
 	// Create uninstall script if temporary install
 	if temporary {
 		uninstallCommands := ""
@@ -351,17 +350,13 @@ func zshConfig() []action {
 	// Install oh-my-zsh non-interactively
 	actionsToRun = append(actionsToRun, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 	// Get and save zshrc
-	curlZshrc := getCurlDownloadCommand("zsh/zshrc", "~/.zshrc")
-	actionsToRun = append(actionsToRun, action{curlZshrc, "Saving zshrc"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/zshrc", "~/.zshrc", "Saving zshrc"))
 	// Get and save aliases
-	curlAliases := getCurlDownloadCommand("zsh/aliases", "~/.aliases")
-	actionsToRun = append(actionsToRun, action{curlAliases, "Saving aliases"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/aliases", "~/.aliases", "Saving aliases"))
 	// Get and save functions
-	curlFunctions := getCurlDownloadCommand("zsh/functions", "~/.functions")
-	actionsToRun = append(actionsToRun, action{curlFunctions, "Saving functions"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/functions", "~/.functions", "Saving functions"))
 	// Get and save t3.zsh-theme
-	curlT3Theme := getCurlDownloadCommand("zsh/t3.zsh-theme", "~/.oh-my-zsh/themes/t3.zsh-theme")
-	actionsToRun = append(actionsToRun, action{curlT3Theme, "Saving t3.zsh-theme"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/t3.zsh-theme", "~/.oh-my-zsh/themes/t3.zsh-theme", "Saving t3.zsh-theme"))
 	return actionsToRun
 }
 
@@ -386,14 +381,11 @@ func vanillaZshConfig(temporary bool) []action {
 		actionsToRun = append(actionsToRun, action{"mkdir -p ~/.shell", "Creating .shell directory"})
 	}
 	// Get and save zshrc
-	curlZshrc := getCurlDownloadCommand("zsh/vanillaZshrc", zshBasePath+"/zshrc")
-	actionsToRun = append(actionsToRun, action{curlZshrc, "Saving zshrc"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/vanillaZshrc", zshBasePath+"/zshrc", "Saving zshrc"))
 	// Get and save aliases
-	curlAliases := getCurlDownloadCommand("zsh/aliases", zshBasePath+"/aliases")
-	actionsToRun = append(actionsToRun, action{curlAliases, "Saving aliases"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/aliases", zshBasePath+"/aliases", "Saving aliases"))
 	// Get and save functions
-	curlFunctions := getCurlDownloadCommand("zsh/functions", zshBasePath+"/functions")
-	actionsToRun = append(actionsToRun, action{curlFunctions, "Saving functions"})
+	actionsToRun = append(actionsToRun, getCurlAction("zsh/functions", zshBasePath+"/functions", "Saving functions"))
 	// Create uninstall script if temporary install
 	if temporary {
 		uninstallCommands := ""
