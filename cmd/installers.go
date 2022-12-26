@@ -237,10 +237,7 @@ func installActions(packageGroups ...string) []action {
 //	SPECIFIC INSTALLERS   //
 ////////////////////////////
 
-func ohmyzshInstallCmd() string {
-	return "curl -fsSLo ~/install-oh-my-zsh.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && sh ~/install-oh-my-zsh.sh --unattended && rm ~/install-oh-my-zsh.sh"
-}
-
+// Install tmux and tmux.conf
 func tmuxConfig(temporary bool) []action {
 	actionsToRun := []action{}
 	// Check if tmux already exists
@@ -271,6 +268,7 @@ func tmuxConfig(temporary bool) []action {
 	return actionsToRun
 }
 
+// Install vim, vimrc, templates, and plugins
 func vimConfig() []action {
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install Vim
@@ -287,7 +285,7 @@ func vimConfig() []action {
 	if err != nil {
 		log.Fatal(err)
 	}
-	runCommand("mkdir -p ~/.vim/templates")
+	actionsToRun = append(actionsToRun, action{"mkdir -p ~/.vim/templates", "Creating ~/.vim/templates directory"})
 	for _, file := range files {
 		// Write each file to ~/.vim/templates
 		templateAction := getCurlAction(fmt.Sprintf("vim/templates/%s", file.Name()), fmt.Sprintf("~/.vim/templates/%s", file.Name()), fmt.Sprintf("Saving %s", file.Name()))
@@ -298,6 +296,7 @@ func vimConfig() []action {
 	return actionsToRun
 }
 
+// Install vim for temporary use on another machine
 func vanillaVimConfig(temporary bool) []action {
 	actionsToRun := []action{}
 	// Install Vim if necessary
@@ -329,6 +328,12 @@ func vanillaVimConfig(temporary bool) []action {
 	return actionsToRun
 }
 
+// Long command to install oh-my-zsh non-interactively
+func ohmyzshInstallCmd() string {
+	return "curl -fsSLo ~/install-oh-my-zsh.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && sh ~/install-oh-my-zsh.sh --unattended && rm ~/install-oh-my-zsh.sh"
+}
+
+// Install zsh, oh-my-zsh, zshrc and other zsh config files
 func zshConfig() []action {
 	actionsToRun := []action{{pm.updateCmd, "Updating package manager"}}
 	// Install zsh
@@ -346,6 +351,7 @@ func zshConfig() []action {
 	return actionsToRun
 }
 
+// Install zsh for temporary use on another machine
 func vanillaZshConfig(temporary bool) []action {
 	actionsToRun := []action{}
 	// Install zsh if necessary
