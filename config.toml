@@ -1,0 +1,67 @@
+#######################
+##   Global config   ##
+#######################
+# Directory to install dotfiles in when --tmp invoked
+tmp_dir = "~/.@repo_name.tmp"
+
+# Only install on macOS
+macOS_only = [
+	"raycast",
+	"skhd",
+	"yabai"
+]
+
+# Dotfiles not installed in base of home directory
+[custom_paths]
+gnupg = "~/.gnupg"
+raycast = "~/.raycast"
+"vim/templates" = "~/.vim/templates"
+
+
+####################
+##      tmux		  ##
+####################
+[tmux]
+help_message = "Install tmux and config files"
+
+[tmux.install]
+"Installing tmux" = "@install tmux"
+"Saving .tmux.conf" = "@save tmux/tmux.conf"
+
+
+####################
+##      Vim 		  ##
+####################
+[vim]
+help_message = "Install vim and config files"
+
+[vim.install]
+"Installing Vim" = "@install Vim"
+"Saving .vimrc" = "@save vim/vimrc"
+"Saving template files" = "@save vim/templates/*"
+"Installing Vim plugins" = "vim +PluginInstall +qall"
+
+[vim.tmp_install]
+"Installing Vim" = "@install Vim"
+"Saving .vimrc" = "@save vim/vanilla_vimrc"
+
+
+####################
+##      Zsh 		  ##
+####################
+[zsh]
+help_message = "Install Zsh and config files"
+
+[zsh.install]
+"Installing Zsh" = "@install Zsh"
+"Installing Oh My Zsh" = "@install oh-my-zsh"
+"Saving .zshrc" = "@save zsh/zshrc"
+"Saving .aliases" = "@save zsh/aliases"
+"Saving .functions" = "@save zsh/functions"
+"Saving Zsh themes" = "@save zsh/*.zsh-theme"
+
+[zsh.tmp_install]
+"Installing Zsh" = "@install Zsh"
+"Saving .zshrc" = "@save zsh/vanilla_zshrc"
+"Saving .aliases" = "@save zsh/aliases"
+"Saving .functions" = "@save zsh/functions"
