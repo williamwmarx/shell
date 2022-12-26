@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -175,6 +176,10 @@ func getPackagesFromGroup(packageGroup map[string]pkg) []pkg {
 	for _, pack := range packageGroup {
 		pacs = append(pacs, pack)
 	}
+	// Sort by alphabetical order, irrespective of case
+	sort.Slice(pacs, func(i, j int) bool {
+		return strings.ToLower(pacs[i].Name) < strings.ToLower(pacs[j].Name)
+	})
 	return pacs
 }
 
