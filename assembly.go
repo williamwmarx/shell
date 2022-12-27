@@ -66,6 +66,69 @@ func writePackagesREADME() {
 	f.WriteString(strings.TrimSpace(markdown))
 }
 
+type targetsText struct {
+	header string
+	body string
+}
+
+// Writes apex README.md, showing install command and listing synced dotfiles
+func writeApexREADME() {
+	// Get install URL
+	installURL := cmd.Config.CustomInstallURL
+	if installURL == "" {
+		installURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/main/install.sh", cmd.RepoPath())
+	}
+
+	// Read the apex README template
+	markdownBase, err := os.ReadFile("assets/apex_README_base.md")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Add proper URL for install script
+	markdown := strings.ReplaceAll(string(markdownBase), "INSTALL_URL", installURL)
+
+	// Format text for synced targets
+	var syncTargets []targetsText
+	for _, s := range cmd.Config.Sync {
+		sync := reflect.ValueOf(&s).Elem()
+		// Name of target group as h3
+		header := fmt.Sprintf("### %s\n", sync.FieldByName("Name").String())
+
+		// Description of target group
+		body := sync.FieldByName("Description").String()
+		if body != "" {
+			body = fmt.Sprintf("%s\n", body)
+		}
+
+		// List of targets and paths
+		for _, t := range sync.FieldByName("Targets").Interface().([]cmd.Target) {
+			paths := strings.Split(t.LocalPath, "/")
+			body += fmt.Sprintf("- [%s](%s) — %s\n", paths[len(paths)-1], t.RepoPath, t.Description)
+		}
+
+		syncTargets = append(syncTargets, targetsText{header, body + "\n"})
+	}
+
+	// Sort sync targets by name
+	sort.Slice(syncTargets, func(i, j int) bool {
+		return strings.ToLower(syncTargets[i].header) < strings.ToLower(syncTargets[j].header)
+	})
+
+	// Add sync targets to markdown
+	for _, d := range syncTargets {
+		markdown += d.header + d.body
+	}
+
+	// Write markdown to README.md
+	f, err := os.Create("README.md")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	f.WriteString(strings.TrimSpace(markdown))
+}
+
 func main() {
 	writePackagesREADME()
+	writeApexREADME()
 }

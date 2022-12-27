@@ -18,7 +18,24 @@ import (
 //         UTILS          //
 ////////////////////////////
 
-var basePath string = "https://raw.githubusercontent.com/williamwmarx/shell/universalize/"
+// Run a system command and get output
+func commandOutput(command string) string {
+	cmd := exec.Command("sh", "-c", command)
+	stdout, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(stdout)
+}
+
+// Get path to this repository on GitHub
+func RepoPath() string {
+	gitRemoteOriginURL := commandOutput("git config --get remote.origin.url")
+	splitURL := strings.Split(strings.TrimSpace(gitRemoteOriginURL), "/")
+	return strings.Join(splitURL[len(splitURL)-2:], "/")
+}
+
+var basePath string = fmt.Sprintf("https://raw.githubusercontent.com/%s/universalize/", RepoPath())
 
 // Download a file from this repo and return as byte array
 func download(path string) []byte {
@@ -70,6 +87,50 @@ func runCommand(command string) {
 		}
 	}
 }
+
+
+////////////////////////////
+//       GET CONFIG       //
+////////////////////////////
+type (
+	config struct {
+		TmpDir string `toml:"tmp_dir"`
+		CustomInstallURL string `toml:"custom_install_url"`
+		Sync map[string]targetClass
+	}
+
+	targetClass struct {
+		Name string
+		Description string
+		MacOSOnly bool `toml:"macos_only"`
+		Targets []Target
+	}
+
+	Target struct {
+		Description string
+		RepoPath string `toml:"repo_path"`
+		LocalPath string `toml:"local_path"`
+	}
+)
+
+// Unmarshall config.toml file
+func getConfig() config {
+	// Read text of TOML file
+	configToml, err := os.ReadFile("config.toml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Unmarshall TOML file
+	var c config
+	_, err = toml.Decode(string(configToml), &c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+var Config config = getConfig()
+
 
 ////////////////////////////
 //      GET PACKAGES      //

@@ -3,19 +3,108 @@
 #######################
 # Directory to install dotfiles in when --tmp invoked
 tmp_dir = "~/.@repo_name.tmp"
+custom_install_url = "https://marx.sh"
 
-# Only install on macOS
-macOS_only = [
-	"raycast",
-	"skhd",
-	"yabai"
-]
 
-# Dotfiles not installed in base of home directory
-[custom_paths]
-gnupg = "~/.gnupg"
-raycast = "~/.raycast"
-"vim/templates" = "~/.vim/templates"
+####################
+##    Dotfiles	  ##
+####################
+# Git config files
+[sync.git]
+name = "Git"
+
+[[sync.git.targets]]
+description = "Git configuration"
+repo_path = "git/gitconfig"
+local_path = "~/.gitconfig"
+
+# GnuPG config files
+[sync.gnupg]
+name = "GnuPG"
+description = "Set up pinentry program"
+
+[[sync.gnupg.targets]]
+description = "GnuPG configuration"
+repo_path = "gnupg/gpg.conf"
+local_path = "~/.gnupg/gpg.conf"
+
+[[sync.gnupg.targets]]
+description = "GnuPG agent configuration"
+repo_path = "gnupg/gpg-agent.conf"
+local_path = "~/.gnupg/gpg-agent.conf"
+
+# Raycast shell scripts
+[sync.raycast]
+name = "Raycast"
+description = "Raycast shell scripts"
+macos_only = true
+
+[[sync.raycast.targets]]
+description = "Strip formatting (while preserving whitespace) from clipboard"
+repo_path = "raycast/clear-format.sh"
+local_path = "~/.raycast/clear-format.sh"
+
+# skhd config files
+[sync.skhd]
+name = "skhd"
+macos_only = true
+
+[[sync.skhd.targets]]
+description = "Configure the hotkey daemon I use (mainly to manage Yabai)"
+repo_path = "skhd/skhdrc"
+local_path = "~/.skhdrc"
+
+# tmux config files
+[sync.tmux]
+name = "tmux"
+
+[[sync.tmux.targets]]
+description = "Clean UI, useful info only, Vim-like keybindings"
+repo_path = "tmux/tmux.conf"
+local_path = "~/.tmux.conf"
+
+# Vim config files
+[sync.vim]
+name = "Vim"
+
+[[sync.vim.targets]]
+description = "Vim configuration"
+repo_path = "vim/vimrc"
+local_path = "~/.vimrc"
+
+# Yabai config files
+[sync.yabai]
+name = "yabai"
+macos_only = true
+
+[[sync.yabai.targets]]
+description = "Manage yabai, the tiling window manager I use"
+repo_path = "yabai/yabairc"
+local_path = "~/.yabairc"
+
+# Zsh config files
+[sync.zsh]
+name = "Zsh"
+
+[[sync.zsh.targets]]
+description = "My go-to shell setup, leveraging Oh My Zsh (if available)"
+repo_path = "zsh/zshrc"
+local_path = "~/.zshrc"
+
+[[sync.zsh.targets]]
+description = "Useful aliases, built to work across all UNIX systems"
+repo_path = "zsh/aliases"
+local_path = "~/.aliases"
+
+[[sync.zsh.targets]]
+description = "Useful functions, built to work across all UNIX systems"
+repo_path = "zsh/functions"
+local_path = "~/.functions"
+
+[[sync.zsh.targets]]
+description = "A nice, clean theme with everything you need, and nothing more"
+repo_path = "zsh/t3.zsh-theme"
+local_path = "~/.oh-my-zsh/themes/t3.zsh-theme"
 
 
 ####################

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strings"
 )
 
 func tmuxConfig(temporary bool) []action {
@@ -196,7 +197,10 @@ func fullConfig() []action {
 	actions = append(actions, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 
 	// Clone this repo into home directory
-	actions = append(actions, action{"git clone https://github.com/williamwmarx/shell.git ~/.shell", "Cloning shell repo"})
+	repoPath := RepoPath()
+	gitClone := fmt.Sprintf("git clone https://github.com/%s.git", repoPath)
+	repoName := strings.Split(repoPath, "/")[1]
+	actions = append(actions, action{fmt.Sprintf("%s ~/.%s", gitClone, repoName), fmt.Sprintf("Cloning %s repo", repoName)})
 
 	// Create symlinks
 	actions = append(actions, action{"ln -sf ~/.shell/git/gitconfig ~/.gitconfig", "Creating gitconfig symlink"})
