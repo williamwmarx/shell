@@ -101,7 +101,6 @@ type (
 
 	targetClass struct {
 		Name string
-		Description string
 		MacOSOnly bool `toml:"macos_only"`
 		Targets []Target
 	}

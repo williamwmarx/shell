@@ -21,7 +21,6 @@ local_path = "~/.gitconfig"
 # GnuPG config files
 [sync.gnupg]
 name = "GnuPG"
-description = "Set up pinentry program"
 
 [[sync.gnupg.targets]]
 description = "GnuPG configuration"
@@ -36,7 +35,6 @@ local_path = "~/.gnupg/gpg-agent.conf"
 # Raycast shell scripts
 [sync.raycast]
 name = "Raycast"
-description = "Raycast shell scripts"
 macos_only = true
 
 [[sync.raycast.targets]]

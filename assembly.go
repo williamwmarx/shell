@@ -94,13 +94,8 @@ func writeApexREADME() {
 		// Name of target group as h3
 		header := fmt.Sprintf("### %s\n", sync.FieldByName("Name").String())
 
-		// Description of target group
-		body := sync.FieldByName("Description").String()
-		if body != "" {
-			body = fmt.Sprintf("%s\n", body)
-		}
-
 		// List of targets and paths
+		var body string
 		for _, t := range sync.FieldByName("Targets").Interface().([]cmd.Target) {
 			paths := strings.Split(t.LocalPath, "/")
 			body += fmt.Sprintf("- [%s](%s) — %s\n", paths[len(paths)-1], t.RepoPath, t.Description)

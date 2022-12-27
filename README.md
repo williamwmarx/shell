@@ -16,12 +16,10 @@ See the [packages](packages) README for more info.
 - [.gitconfig](git/gitconfig) — Git configuration
 
 ### GnuPG
-Set up pinentry program
 - [gpg.conf](gnupg/gpg.conf) — GnuPG configuration
 - [gpg-agent.conf](gnupg/gpg-agent.conf) — GnuPG agent configuration
 
 ### Raycast
-Raycast shell scripts
 - [clear-format.sh](raycast/clear-format.sh) — Strip formatting (while preserving whitespace) from clipboard
 
 ### skhd
