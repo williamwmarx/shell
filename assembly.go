@@ -11,21 +11,57 @@ import (
 	"github.com/williamwmarx/shell/cmd"
 )
 
+// Store repo metadata
+type repo struct {
+	path string
+	name string
+	url  string
+}
+
+// Get install metadata
+func installMetadata() repo {
+	// Repo path (i.e. williamwmarx/shell)
+	repoPath := cmd.RepoPath()
+	// Get install URL
+	installURL := cmd.Config.CustomInstallURL
+	if installURL == "" {
+		installURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/main/install.sh", repoPath)
+	}
+	return repo{repoPath, strings.Split(repoPath, "/")[1], installURL}
+}
+
+var metadata repo = installMetadata()
+
+// Read markdown from file
+func readToString(path string) string {
+	markdown, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(markdown)
+}
+
+// Write markdown to file
+func writeString(path, markdown string) {
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	f.WriteString(strings.TrimSpace(markdown))
+}
+
 // Store package metadata
 type packageMetadata struct {
 	name        string
-	url				  string
+	url         string
 	description string
 }
 
 // Writes packages/README.md, a list of all packages
 func writePackagesREADME() {
 	// Read the file packages README template
-	markdownBase, err := os.ReadFile("assets/packages_README_base.md")
-	if err != nil {
-		log.Fatal(err)
-	}
-	markdown := string(markdownBase)
+	markdown := readToString("assets/packages_README_base.md")
 
 	// Iterate through package groups
 	packageGroups := reflect.ValueOf(&cmd.Packages).Elem()
@@ -58,34 +94,20 @@ func writePackagesREADME() {
 	}
 
 	// Write markdown to packages/README.md
-	f, err := os.Create("packages/README.md")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	f.WriteString(strings.TrimSpace(markdown))
+	writeString("packages/README.md", markdown)
 }
 
+// Store synced target markdown format
 type targetsText struct {
 	header string
-	body string
+	body   string
 }
 
 // Writes apex README.md, showing install command and listing synced dotfiles
 func writeApexREADME() {
-	// Get install URL
-	installURL := cmd.Config.CustomInstallURL
-	if installURL == "" {
-		installURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/main/install.sh", cmd.RepoPath())
-	}
-
-	// Read the apex README template
-	markdownBase, err := os.ReadFile("assets/apex_README_base.md")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Add proper URL for install script
-	markdown := strings.ReplaceAll(string(markdownBase), "INSTALL_URL", installURL)
+	// Read the apex README template and insert proper URL
+	markdown := readToString("assets/apex_README_base.md")
+	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", metadata.url)
 
 	// Format text for synced targets
 	var syncTargets []targetsText
@@ -115,15 +137,64 @@ func writeApexREADME() {
 	}
 
 	// Write markdown to README.md
-	f, err := os.Create("README.md")
-	if err != nil {
-		log.Fatal(err)
+	writeString("README.md", markdown)
+}
+
+// Writes INSTALL.md, showing thorough install options
+func writeINSTALL() {
+	// Read the apex README template and insert proper URL
+	markdown := readToString("assets/INSTALL_base.md")
+	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", metadata.url)
+
+	// Get installers and sort by name
+	installers := cmd.Config.Installers
+	var installerNames []string
+	for k := range installers {
+		installerNames = append(installerNames, k)
 	}
-	defer f.Close()
-	f.WriteString(strings.TrimSpace(markdown))
+	sort.Strings(installerNames)
+
+	// Add installers to markdown
+	for _, in := range installerNames {
+		// Title and description
+		markdown += fmt.Sprintf("#### %s\n%s\n", in, installers[in].Description)
+		// Code block
+		markdown += fmt.Sprintf("```bash\nsh <(curl %s) --%s\n```\n", metadata.url, in)
+		// Extra line break
+		markdown += "\n"
+	}
+
+	// Tempoarary install explanation
+	tmp_explanation := "### Temporary install\nSometimes, you only need your dotfiles " +
+		"temporarily. For example, say you're editing some code on a friend's machine. " +
+		"You could slowly go through it with their editor, or you could load up your vim " +
+		"config and fly through their code. This is where the `--tmp` flag comes in. You " +
+		"can use the `--tmp` flag with "
+	// Add installers flags
+	for i, name := range installerNames {
+		switch i {
+		case 0:
+			tmp_explanation += fmt.Sprintf("`--%s`", name)
+		case len(installerNames) - 1:
+			tmp_explanation += fmt.Sprintf(" or `--%s`", name)
+		default:
+			tmp_explanation += fmt.Sprintf(", `--%s`", name)
+		}
+	}
+	tmp_explanation += ". It will install the packages, download necessary dotfiles into " +
+		"the `TMP_DIR` directory, and add the shell script `TMP_DIR/uninstall.sh` which " +
+		"will uninstall any packages you installed and remove the `TMP_DIR` directory. " +
+		"Temporary install will look for the “vanilla” versions of synced dotfiles, where " +
+		"possible."
+	tmp_dir := strings.ReplaceAll(cmd.Config.TmpDir, "@repo_name", metadata.name)
+	markdown += strings.ReplaceAll(tmp_explanation, "TMP_DIR", tmp_dir)
+
+	// Write markdown to INSTALL.md
+	writeString("INSTALL.md", markdown)
 }
 
 func main() {
 	writePackagesREADME()
 	writeApexREADME()
+	writeINSTALL()
 }

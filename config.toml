@@ -108,10 +108,11 @@ local_path = "~/.oh-my-zsh/themes/t3.zsh-theme"
 ####################
 ##      tmux		  ##
 ####################
-[tmux]
+[installers.tmux]
 help_message = "Install tmux and config files"
+description = "Install [tmux](https://github.com/tmux/tmux) and [.tmux.conf](tmux/tmux.conf)"
 
-[tmux.install]
+[installers.tmux.install]
 "Installing tmux" = "@install tmux"
 "Saving .tmux.conf" = "@save tmux/tmux.conf"
 
@@ -119,16 +120,17 @@ help_message = "Install tmux and config files"
 ####################
 ##      Vim 		  ##
 ####################
-[vim]
+[installers.vim]
 help_message = "Install vim and config files"
+description = "Install [Vim](https://github.com/vim/vim), my [.vimrc](vim/vimrc), and [skeleton files](vim/templates)"
 
-[vim.install]
+[installers.vim.install]
 "Installing Vim" = "@install Vim"
 "Saving .vimrc" = "@save vim/vimrc"
 "Saving template files" = "@save vim/templates/*"
 "Installing Vim plugins" = "vim +PluginInstall +qall"
 
-[vim.tmp_install]
+[installers.vim.tmp_install]
 "Installing Vim" = "@install Vim"
 "Saving .vimrc" = "@save vim/vanilla_vimrc"
 
@@ -136,10 +138,11 @@ help_message = "Install vim and config files"
 ####################
 ##      Zsh 		  ##
 ####################
-[zsh]
+[installers.zsh]
 help_message = "Install Zsh and config files"
+description = "Install [Zsh](https://www.zsh.org/), [Oh-My-Zsh](https://ohmyz.sh/), [.zshrc](zsh/zshrc), [.aliases](zsh/aliases), [.functions](zsh/functions), and [Zsh theme](zsh/t3.zsh-theme)"
 
-[zsh.install]
+[installers.zsh.install]
 "Installing Zsh" = "@install Zsh"
 "Installing Oh My Zsh" = "@install oh-my-zsh"
 "Saving .zshrc" = "@save zsh/zshrc"
@@ -147,7 +150,7 @@ help_message = "Install Zsh and config files"
 "Saving .functions" = "@save zsh/functions"
 "Saving Zsh themes" = "@save zsh/*.zsh-theme"
 
-[zsh.tmp_install]
+[installers.zsh.tmp_install]
 "Installing Zsh" = "@install Zsh"
 "Saving .zshrc" = "@save zsh/vanilla_zshrc"
 "Saving .aliases" = "@save zsh/aliases"

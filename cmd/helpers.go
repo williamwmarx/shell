@@ -88,27 +88,36 @@ func runCommand(command string) {
 	}
 }
 
-
-////////////////////////////
-//       GET CONFIG       //
-////////////////////////////
+// //////////////////////////
+//
+//	GET CONFIG       //
+//
+// //////////////////////////
 type (
 	config struct {
-		TmpDir string `toml:"tmp_dir"`
+		TmpDir           string `toml:"tmp_dir"`
 		CustomInstallURL string `toml:"custom_install_url"`
-		Sync map[string]targetClass
+		Sync             map[string]targetClass
+		Installers       map[string]Installer
 	}
 
 	targetClass struct {
-		Name string
+		Name      string
 		MacOSOnly bool `toml:"macos_only"`
-		Targets []Target
+		Targets   []Target
 	}
 
 	Target struct {
 		Description string
-		RepoPath string `toml:"repo_path"`
-		LocalPath string `toml:"local_path"`
+		RepoPath    string `toml:"repo_path"`
+		LocalPath   string `toml:"local_path"`
+	}
+
+	Installer struct {
+		HelpMessage string `toml:"help_message"`
+		Description string
+		Install     map[string]string
+		TmpInstall  map[string]string `toml:"tmp_install"`
 	}
 )
 
@@ -130,7 +139,6 @@ func getConfig() config {
 
 var Config config = getConfig()
 
-
 ////////////////////////////
 //      GET PACKAGES      //
 ////////////////////////////
@@ -145,14 +153,14 @@ type (
 	}
 
 	pkg struct {
-		Name         string
-		Description  string
-		URL 				 string `toml:"url"`
-		AptName      string `toml:"apt_name"`
-		BrewName     string `toml:"brew_name"`
-		BrewCaskName string `toml:"brew_cask_name"`
-		DnfName      string `toml:"dnf_name"`
-		PacmanName   string `toml:"pacman_name"`
+		Name           string
+		Description    string
+		URL            string `toml:"url"`
+		AptName        string `toml:"apt_name"`
+		BrewName       string `toml:"brew_name"`
+		BrewCaskName   string `toml:"brew_cask_name"`
+		DnfName        string `toml:"dnf_name"`
+		PacmanName     string `toml:"pacman_name"`
 		InstallCommand string `toml:"install_command"`
 	}
 )
