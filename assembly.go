@@ -2,54 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/williamwmarx/shell/cmd"
 )
-
-// Store repo metadata
-type repo struct {
-	path string
-	name string
-	url  string
-}
-
-// Get install metadata
-func installMetadata() repo {
-	// Repo path (i.e. williamwmarx/shell)
-	repoPath := cmd.RepoPath()
-	// Get install URL
-	installURL := cmd.Config.CustomInstallURL
-	if installURL == "" {
-		installURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/main/install.sh", repoPath)
-	}
-	return repo{repoPath, strings.Split(repoPath, "/")[1], installURL}
-}
-
-var metadata repo = installMetadata()
-
-// Read markdown from file
-func readToString(path string) string {
-	markdown, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(markdown)
-}
-
-// Write markdown to file
-func writeString(path, markdown string) {
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	f.WriteString(strings.TrimSpace(markdown))
-}
 
 // Store package metadata
 type packageMetadata struct {
@@ -61,7 +19,7 @@ type packageMetadata struct {
 // Writes packages/README.md, a list of all packages
 func writePackagesREADME() {
 	// Read the file packages README template
-	markdown := readToString("assets/packages_README_base.md")
+	markdown := cmd.ReadToString("assets/packages_README_base.md")
 
 	// Iterate through package groups
 	packageGroups := reflect.ValueOf(&cmd.Packages).Elem()
@@ -94,7 +52,7 @@ func writePackagesREADME() {
 	}
 
 	// Write markdown to packages/README.md
-	writeString("packages/README.md", markdown)
+	cmd.WriteString("packages/README.md", markdown)
 }
 
 // Store synced target markdown format
@@ -106,8 +64,8 @@ type targetsText struct {
 // Writes apex README.md, showing install command and listing synced dotfiles
 func writeApexREADME() {
 	// Read the apex README template and insert proper URL
-	markdown := readToString("assets/apex_README_base.md")
-	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", metadata.url)
+	markdown := cmd.ReadToString("assets/apex_README_base.md")
+	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", cmd.Metadata.URL)
 
 	// Format text for synced targets
 	var syncTargets []targetsText
@@ -137,14 +95,14 @@ func writeApexREADME() {
 	}
 
 	// Write markdown to README.md
-	writeString("README.md", markdown)
+	cmd.WriteString("README.md", markdown)
 }
 
 // Writes INSTALL.md, showing thorough install options
 func writeINSTALL() {
 	// Read the apex README template and insert proper URL
-	markdown := readToString("assets/INSTALL_base.md")
-	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", metadata.url)
+	markdown := cmd.ReadToString("assets/INSTALL_base.md")
+	markdown = strings.ReplaceAll(markdown, "INSTALL_URL", cmd.Metadata.URL)
 
 	// Get installers and sort by name
 	installers := cmd.Config.Installers
@@ -159,7 +117,7 @@ func writeINSTALL() {
 		// Title and description
 		markdown += fmt.Sprintf("#### %s\n%s\n", in, installers[in].Description)
 		// Code block
-		markdown += fmt.Sprintf("```bash\nsh <(curl %s) --%s\n```\n", metadata.url, in)
+		markdown += fmt.Sprintf("```bash\nsh <(curl %s) --%s\n```\n", cmd.Metadata.URL, in)
 		// Extra line break
 		markdown += "\n"
 	}
@@ -176,7 +134,7 @@ func writeINSTALL() {
 		case 0:
 			tmp_explanation += fmt.Sprintf("`--%s`", name)
 		case len(installerNames) - 1:
-			tmp_explanation += fmt.Sprintf(" or `--%s`", name)
+			tmp_explanation += fmt.Sprintf(", or `--%s`", name)
 		default:
 			tmp_explanation += fmt.Sprintf(", `--%s`", name)
 		}
@@ -186,11 +144,11 @@ func writeINSTALL() {
 		"will uninstall any packages you installed and remove the `TMP_DIR` directory. " +
 		"Temporary install will look for the “vanilla” versions of synced dotfiles, where " +
 		"possible."
-	tmp_dir := strings.ReplaceAll(cmd.Config.TmpDir, "@repo_name", metadata.name)
+	tmp_dir := strings.ReplaceAll(cmd.Config.TmpDir, "@repo_name", cmd.Metadata.Name)
 	markdown += strings.ReplaceAll(tmp_explanation, "TMP_DIR", tmp_dir)
 
 	// Write markdown to INSTALL.md
-	writeString("INSTALL.md", markdown)
+	cmd.WriteString("INSTALL.md", markdown)
 }
 
 func main() {
