@@ -18,7 +18,7 @@ import (
 //         UTILS          //
 ////////////////////////////
 
-var basePath string = "https://raw.githubusercontent.com/williamwmarx/shell/main/"
+var basePath string = "https://raw.githubusercontent.com/williamwmarx/shell/universalize/"
 
 // Download a file from this repo and return as byte array
 func download(path string) []byte {
@@ -86,11 +86,14 @@ type (
 
 	pkg struct {
 		Name         string
+		Description  string
+		URL 				 string `toml:"url"`
 		AptName      string `toml:"apt_name"`
 		BrewName     string `toml:"brew_name"`
 		BrewCaskName string `toml:"brew_cask_name"`
 		DnfName      string `toml:"dnf_name"`
 		PacmanName   string `toml:"pacman_name"`
+		InstallCommand string `toml:"install_command"`
 	}
 )
 
@@ -137,7 +140,7 @@ func getPackages() pkgs {
 	return packages
 }
 
-var packages pkgs = getPackages()
+var Packages pkgs = getPackages()
 
 ////////////////////////////
 //    INSTALL PACKAGES    //
@@ -223,7 +226,7 @@ func installActions(packageGroups ...string) []action {
 	var actions []action
 	if len(packageGroups) > 0 {
 		for _, pg := range packageGroups {
-			for _, p := range packages.packageGroup(pg) {
+			for _, p := range Packages.packageGroup(pg) {
 				actions = append(actions, action{pm.installCommand(p), fmt.Sprintf("Installing %s", p.Name)})
 			}
 		}

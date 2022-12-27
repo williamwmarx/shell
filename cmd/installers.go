@@ -22,7 +22,7 @@ func tmuxConfig(temporary bool) []action {
 	// Install tmux if necessary
 	if (temporary && !tmuxAlreadyExists) || !temporary {
 		actions = append(actions, action{pm.updateCmd, "Updating package manager"})
-		actions = append(actions, action{pm.installCommand(packages.packageByName("tmux")), "Installing tmux"})
+		actions = append(actions, action{pm.installCommand(Packages.packageByName("tmux")), "Installing tmux"})
 	}
 
 	// Get and save tmux.conf
@@ -32,7 +32,7 @@ func tmuxConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !tmuxAlreadyExists {
-			uninstallCommands += pm.uninstallCommand(packages.packageByName("tmux")) + " && "
+			uninstallCommands += pm.uninstallCommand(Packages.packageByName("tmux")) + " && "
 		}
 		uninstallCommands += "rm -rf ~/.shell.tmp"
 		actions = append(actions, action{uninstallCommands, "Saving uninstall script"})
@@ -46,7 +46,7 @@ func vimConfig() []action {
 	actions := []action{{pm.updateCmd, "Updating package manager"}}
 
 	// Install Vim
-	actions = append(actions, action{pm.installCommand(packages.packageByName("Vim")), "Installing vim"})
+	actions = append(actions, action{pm.installCommand(Packages.packageByName("Vim")), "Installing vim"})
 
 	// Get and save vimrc
 	actions = append(actions, action{formatCurl("vim/vimrc", "~/.vimrc"), "Saving vimrc"})
@@ -83,7 +83,7 @@ func vanillaVimConfig(temporary bool) []action {
 	vimAlreadyExists := commandExists("vim")
 	if !vimAlreadyExists {
 		actions = append(actions, action{pm.updateCmd, "Updating package manager"})
-		actions = append(actions, action{pm.installCommand(packages.packageByName("Vim")), "Installing vim"})
+		actions = append(actions, action{pm.installCommand(Packages.packageByName("Vim")), "Installing vim"})
 	}
 
 	// Set vimrc path
@@ -102,7 +102,7 @@ func vanillaVimConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !vimAlreadyExists {
-			uninstallCommands += pm.installCommand(packages.packageByName("Vim")) + " && "
+			uninstallCommands += pm.installCommand(Packages.packageByName("Vim")) + " && "
 		}
 		uninstallCommands += "rm -rf ~/.shell.tmp"
 		actions = append(actions, action{uninstallCommands, "Saving uninstall script"})
@@ -119,7 +119,7 @@ func ohmyzshInstallCmd() string {
 // Install zsh, oh-my-zsh, zshrc and other zsh config files
 func zshConfig() []action {
 	actions := []action{{pm.updateCmd, "Updating package manager"}}
-	actions = append(actions, action{pm.installCommand(packages.packageByName("Zsh")), "Installing zsh"})
+	actions = append(actions, action{pm.installCommand(Packages.packageByName("Zsh")), "Installing zsh"})
 	actions = append(actions, action{ohmyzshInstallCmd(), "Installing oh-my-zsh"})
 	actions = append(actions, action{formatCurl("zsh/zshrc", "~/.zshrc"), "Saving zshrc"})
 	actions = append(actions, action{formatCurl("zsh/aliases", "~/.aliases"), "Saving aliases"})
@@ -137,7 +137,7 @@ func vanillaZshConfig(temporary bool) []action {
 	zshAlreadyExists := commandExists("zsh")
 	if !zshAlreadyExists {
 		actions = append(actions, action{pm.updateCmd, "Updating package manager"})
-		actions = append(actions, action{pm.installCommand(packages.packageByName("Zsh")), "Installing zsh"})
+		actions = append(actions, action{pm.installCommand(Packages.packageByName("Zsh")), "Installing zsh"})
 	}
 
 	// Set zshrc path
@@ -160,7 +160,7 @@ func vanillaZshConfig(temporary bool) []action {
 	if temporary {
 		uninstallCommands := ""
 		if !zshAlreadyExists {
-			uninstallCommands += pm.installCommand(packages.packageByName("Zsh")) + " && "
+			uninstallCommands += pm.installCommand(Packages.packageByName("Zsh")) + " && "
 		}
 		actions = append(actions, action{"rm -rf ~/.shell.tmp", "Saving uninstall script"})
 	}
