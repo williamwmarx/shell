@@ -9,6 +9,6 @@ sh <(curl INSTALL_URL)
 > See [INSTALL.md](INSTALL.md) for more options
 
 ### Packages 📦
-- See the [packages](packages) README for more info
+See the [packages](packages) README for more info
 
 ## Dotfiles 🧩
