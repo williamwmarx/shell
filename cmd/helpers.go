@@ -199,12 +199,40 @@ func (packages *pkgs) packageByName(name string) map[string]string {
 
 // Get system install command for a given package
 func (pm *packageManager) installCmd(name string) string {
-	return pm.commands.installCmd + " " + pm.packages.packageByName(name)[pm.commands.name]
+	// Get package from packages.toml
+	pack := pm.packages.packageByName(name)
+
+	// Check if pack has key "install_command" and return it if it does
+	if installCmd, ok := pack["install_command"]; ok {
+		return installCmd
+	}
+
+	// Check for system package name and return install command if it exists
+	if systemPackageName, ok := pack[pm.commands.name]; ok {
+		return pm.commands.installCmd + " " + systemPackageName
+	}
+
+	// Package not found, return empty string
+	return ""
 }
 
 // Get system uninstall command for a given package
 func (pm *packageManager) uninstallCmd(name string) string {
-	return pm.commands.uninstallCmd + " " + pm.packages.packageByName(name)[pm.commands.name]
+	// Get package from packages.toml
+	pack := pm.packages.packageByName(name)
+
+	// Check if pack has key "uninstall_command" and return it if it does
+	if installCmd, ok := pack["uninstall_command"]; ok {
+		return installCmd
+	}
+
+	// Check for system package name and return uninstall command if it exists
+	if systemPackageName, ok := pack[pm.commands.name]; ok {
+		return pm.commands.uninstallCmd + " " + systemPackageName
+	}
+
+	// Package not found, return empty string
+	return ""
 }
 
 // Get system pacakge manager commands and listed packages

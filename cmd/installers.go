@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 )
 
@@ -64,9 +65,32 @@ func install(flag string, tmp bool) []action {
 				}
 				if matched {
 					// If file matches, add properly formatted curl command to download it
-					localPath := Config.SyncTargets()[strings.ReplaceAll(p, "vanilla_", "")]
+
+					var localPath string
+					if vanillaLocalPath, ok := Config.SyncTargets()[strings.ReplaceAll(p, "vanilla_", "")]; tmp && ok {
+						// If tmp install and file is in vanilla file exists, use that path
+						localPath = vanillaLocalPath
+					} else {
+						if lp := Config.SyncTargets()[p]; lp != "" {
+							// If file is in sync targets, use that path
+							localPath = lp
+						} else {
+							// Otherwise, use repo path prepended with "~/.", assuming it's a dotfile in the root dir
+							localPath = "~/." + p
+						}
+					}
 					localPath = strings.ReplaceAll(localPath, "~", installDir)
 					curl := fmt.Sprintf("curl -fsSLo %s %s", localPath, Config.Metadata.BaseURL+p)
+
+					// Get parent directory of localPath
+					splitLocalPath := strings.Split(localPath, "/")
+					parentDir := strings.Join(splitLocalPath[:len(splitLocalPath)-1], "/")
+
+					// If parent directory is not ~, ensure directory exists before running curl command
+					if parentDir != installDir {
+						curl = fmt.Sprintf("mkdir -p %s; %s", parentDir, curl)
+					}
+
 					matchedFiles = append(matchedFiles, curl)
 				}
 			}
@@ -83,7 +107,7 @@ func install(flag string, tmp bool) []action {
 
 	// Prepend package manager update action if install was found
 	if installFound {
-		actions = append([]action{{PM.commands.updateCmd, "Updating package manager"}}, actions...)
+		actions = append([]action{{"Updating package manager", PM.commands.updateCmd}}, actions...)
 	}
 
 	return actions
@@ -92,7 +116,7 @@ func install(flag string, tmp bool) []action {
 // Full config/install
 func fullConfig() []action {
 	// First, update the package manaer
-	actions := []action{{PM.commands.updateCmd, "Updating package manager"}}
+	actions := []action{{"Updating package manager", PM.commands.updateCmd}}
 
 	// Install homebrew if necessary
 	if runtime.GOOS == "darwin" && !commandExists("brew") {
@@ -101,29 +125,102 @@ func fullConfig() []action {
 	}
 
 	// Install packages
-	for _, pkgGroup := range PM.packages {
-		for packageName := range pkgGroup {
+	// Sort packages by group name, irrespective of case
+	var packageGroups []string
+	for group := range PM.packages {
+		packageGroups = append(packageGroups, group)
+	}
+	sort.SliceStable(packageGroups, func(i, j int) bool {
+		return strings.ToLower(packageGroups[i]) < strings.ToLower(packageGroups[j])
+	})
+
+	// Type for package install actions
+	type packageAction struct {
+		a        action
+		requires string
+	}
+
+	// Add package install actions and note requirements
+	for _, packageGroup := range packageGroups {
+		var packageActions []packageAction
+
+		// Sort packageNames by name, irrespective of case
+		var packageNames []string
+		for packageName := range PM.packages[packageGroup] {
+			packageNames = append(packageNames, packageName)
+		}
+		sort.SliceStable(packageNames, func(i, j int) bool {
+			return strings.ToLower(packageNames[i]) < strings.ToLower(packageNames[j])
+		})
+
+		// Add package install actions
+		for _, packageName := range packageNames {
 			// Ignore description, as it's not a package
 			if packageName != "description" {
 				// Get install command for package and add to actions if it exists
-				installCommmand := PM.installCmd(packageName)
-				if installCommmand != "" {
-					actions = append(actions, action{installCommmand, "Installing " + packageName})
+				installCommand := PM.installCmd(packageName)
+				if installCommand != "" {
+					// Get requirement for package
+					var requires string
+					if r, ok := PM.packages.packageByName(packageName)["requires"]; ok {
+						requires = r
+					}
+					// Add package install action to packageActions
+					a := action{"Installing " + packageName, installCommand}
+					packageActions = append(packageActions, packageAction{a, requires})
 				}
 			}
 		}
+
+		// Sort package actions by message, irrespective of case
+		sort.SliceStable(packageActions, func(i, j int) bool {
+			return strings.ToLower(packageActions[i].a.msg) < strings.ToLower(packageActions[j].a.msg)
+		})
+
+		// Add package actions to actions, ensuring packages that require others are installed after their dependencies
+		var packagesWithDependencies []action
+		for _, packageAction := range packageActions {
+			if packageAction.requires != "" {
+				packagesWithDependencies = append(packagesWithDependencies, packageAction.a)
+			} else {
+				actions = append(actions, packageAction.a)
+			}
+		}
+
+		// Add packages with dependencies to actions
+		actions = append(actions, packagesWithDependencies...)
 	}
 
 	// Clone this repo into home directory
 	gitClone := fmt.Sprintf("git clone https://github.com/%s/%s.git ~/.%s", Config.Metadata.User, Config.Metadata.Repo, Config.Metadata.Repo)
-	gitCloneMsg := fmt.Sprintf("Cloning %s/%s repo to ~/.%s", Config.Metadata.User, Config.Metadata.Repo, Config.Metadata.Repo)
-	actions = append(actions, action{gitClone, gitCloneMsg})
+	gitCloneMsg := fmt.Sprintf("Cloning github.com/%s/%s to ~/.%s", Config.Metadata.User, Config.Metadata.Repo, Config.Metadata.Repo)
+	actions = append(actions, action{gitCloneMsg, gitClone})
 
 	// Create symlinks for dotfiles
+	var symlinkActions []action
 	for repoPath, localPath := range Config.SyncTargets() {
 		msg := fmt.Sprintf("Creating %s symlink", localPath)
-		actions = append(actions, action{fmt.Sprintf("ln -sf %s %s", repoPath, localPath), msg})
+		symlink := fmt.Sprintf("ln -sf ~/.%s/%s %s", Config.Metadata.Repo, repoPath, localPath)
+
+		// Get parent directory of localPath
+		splitLocalPath := strings.Split(localPath, "/")
+		parentDir := strings.Join(splitLocalPath[:len(splitLocalPath)-1], "/")
+
+		// If parent directory is not ~, ensure directory exists before creating symlink
+		if parentDir != "~" {
+			symlink = fmt.Sprintf("mkdir -p %s; %s", parentDir, symlink)
+		}
+
+		symlinkActions = append(symlinkActions, action{msg, symlink})
 	}
+
+	// Sort symlink actions by message, irrespective of case
+	sort.SliceStable(symlinkActions, func(i, j int) bool {
+		return strings.ToLower(symlinkActions[i].msg) < strings.ToLower(symlinkActions[j].msg)
+	})
+
+	// Add symlink actions to actions
+	actions = append(actions, symlinkActions...)
 
 	return actions
 }

@@ -70,7 +70,9 @@ pacman = "nodejs"
 
 [Core."Oh My Zsh"]
 description = "A delightful community-driven framework for managing your zsh configuration."
+requires = "Zsh"
 install_command = "sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"
+uninstall_command = "uninstall_oh_my_zsh"
 
 [Core.OpenSSL]
 description = "A robust, commercial-grade, and full-featured toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols."

@@ -22,7 +22,10 @@ var rootCmd = &cobra.Command{
 	Use:   fmt.Sprintf("sh <(curl %s) [flags]", Config.InstallURL),
 	Short: Config.HelpDescription,
 	Run: func(cmd *cobra.Command, args []string) {
-		options := map[string]bool{}
+		options := map[string]bool{
+			"tmp":  flagPresent(cmd, "tmp"),
+			"full": flagPresent(cmd, "full"),
+		}
 		for k := range Config.Installers {
 			options[k] = flagPresent(cmd, k)
 		}
@@ -46,12 +49,11 @@ func init() {
 	// Add flag for temporary install
 	rootCmd.Flags().BoolP("tmp", "", false, "Install temporarily to "+Config.TmpDir)
 
+	// Add flag for full install
+	rootCmd.Flags().BoolP("full", "", false, "Full shell config")
+
 	// Add flags for all installers
 	for flag, v := range Config.Installers {
-		long_help_message := v.HelpMessage
-		if flag == "full" {
-			long_help_message = "Full system config"
-		}
-		rootCmd.Flags().BoolP(flag, "", false, long_help_message)
+		rootCmd.Flags().BoolP(flag, "", false, v.HelpMessage)
 	}
 }
