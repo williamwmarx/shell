@@ -27,8 +27,8 @@ var (
 
 // Store shell command to run and the name to display when running it
 type action struct {
+	msg     string
 	command string
-	name    string
 }
 
 // List item
@@ -101,7 +101,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return updateChoices(msg, m)
 }
 
-// Select a choice from the list and add corresponding actions to the queue
+// Handle user input when the list of choices is shown
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -109,31 +109,26 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		if msg.String() == "enter" {
+			// Get the selected item and add the corresponding actions to the queue
 			i, ok := m.list.SelectedItem().(item)
 			if ok {
-				switch string(i) {
-				case "Full shell config":
+				if string(i) == "Full shell config" {
 					m.actions = append(m.actions, fullConfig()...)
-				case "Zsh/Oh My Zsh config":
-					m.actions = append(m.actions, zshConfig()...)
-				case "Vim + plugins config":
-					m.actions = append(m.actions, vimConfig()...)
-				case "tmux config":
-					m.actions = append(m.actions, tmuxConfig(false)...)
-				case "Temporary Zsh config (no plugins)":
-					m.actions = append(m.actions, vanillaZshConfig(true)...)
-				case "Temporary Vim config (no plugins)":
-					m.actions = append(m.actions, vanillaVimConfig(true)...)
-				case "Temporary tmux config":
-					m.actions = append(m.actions, tmuxConfig(true)...)
-				case "Core packages":
-					m.actions = append(m.actions, installActions("Core")...)
-				case "Design packages":
-					m.actions = append(m.actions, installActions("Design")...)
-				case "Core GUI packages":
-					m.actions = append(m.actions, installActions("GuiCore")...)
-				case "Design GUI packages":
-					m.actions = append(m.actions, installActions("GuiDesign")...)
+				} else {
+					// Iterate through installers to find a match and add the corresponding actions
+					for flag, v := range Config.Installers {
+						// Get temporary install message
+						hm := strings.Fields(v.HelpMessage)
+						tmpItemMsg := "Temporarily " + strings.ToLower(hm[0]) + " " + strings.Join(hm[1:], " ")
+
+						if string(i) == v.HelpMessage {
+							// Normal install
+							m.actions = append(m.actions, install(flag, false)...)
+						} else if string(i) == tmpItemMsg {
+							// Temporary install
+							m.actions = append(m.actions, install(flag, true)...)
+						}
+					}
 				}
 				return m, tea.Batch(runAction(m.actions[m.index]), m.spinner.Tick)
 			}
@@ -155,7 +150,7 @@ func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		return m, tea.Batch(
-			tea.Printf("%s %s", checkMark, m.actions[m.index-1].name),
+			tea.Printf(fmt.Sprintf("%s %s", checkMark, m.actions[m.index-1].msg)),
 			runAction(m.actions[m.index]),
 		)
 	case spinner.TickMsg:
@@ -185,10 +180,10 @@ func choicesView(m model) string {
 // View for the current action
 func chosenView(m model) string {
 	if m.done {
-		lastPackageComplete := fmt.Sprintf("%s %s\n", checkMark, m.actions[m.index-1].name)
+		lastPackageComplete := fmt.Sprintf("%s %s\n", checkMark, m.actions[m.index-1].msg)
 		return lastPackageComplete + quitTextStyle.Render("All tasks complete 😊")
 	}
-	info := currentActionStyle.Render(m.actions[m.index].name)
+	info := currentActionStyle.Render(m.actions[m.index].msg)
 	return fmt.Sprintf("%s%s (%d/%d)", m.spinner.View(), info, m.index+1, len(m.actions))
 }
 
@@ -198,24 +193,12 @@ type completedActionsMsg string
 func runAction(a action) tea.Cmd {
 	return tea.Tick(time.Millisecond*0, func(t time.Time) tea.Msg {
 		runCommand(a.command)
-		return completedActionsMsg(a.name)
+		return completedActionsMsg(a.msg)
 	})
 }
 
-// Function to check if array of string contains element
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
 // Run the TUI
-func tui(tuiOptions []string) {
-	tuiOptions = append([]string{""}, tuiOptions...)
-
+func tui(tuiOptions map[string]bool) {
 	// Spinner style
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -224,84 +207,43 @@ func tui(tuiOptions []string) {
 	// List of actions
 	actions := []action{}
 
-	if len(tuiOptions) > 1 {
-		// Options passed, run without TUI list selector
-		if contains(tuiOptions, "tmux") {
-			actions = append(actions, tmuxConfig(false)...)
-		}
-		if contains(tuiOptions, "tmux temporary") {
-			actions = append(actions, tmuxConfig(true)...)
-		}
-		if contains(tuiOptions, "vim") {
-			actions = append(actions, vimConfig()...)
-		}
-		if contains(tuiOptions, "vanilla-vim") {
-			actions = append(actions, vanillaVimConfig(false)...)
-		}
-		if contains(tuiOptions, "vanilla-vim temporary") {
-			actions = append(actions, vanillaVimConfig(true)...)
-		}
-		if contains(tuiOptions, "zsh") {
-			actions = append(actions, zshConfig()...)
-		}
-		if contains(tuiOptions, "vanilla-zsh") {
-			actions = append(actions, vanillaZshConfig(false)...)
-		}
-		if contains(tuiOptions, "vanilla-zsh temporary") {
-			actions = append(actions, vanillaZshConfig(true)...)
-		}
-		if contains(tuiOptions, "full") {
-			actions = fullConfig() // Full config bypasses other options
+	// Parse flags
+	if tuiOptions["full"] {
+		// Full config
+		actions = append(actions, fullConfig()...)
+	} else {
+		tmp := tuiOptions["tmp"]
+		for flag, present := range tuiOptions {
+			// Ignore tmp flag, as we already recorded its value
+			if flag == "tmp" {
+				continue
+			}
+			// If flag is present, add the corresponding actions
+			if present {
+				actions = append(actions, install(flag, tmp)...)
+			}
 		}
 	}
 
 	// No options passed, launch the TUI list selector
-	items := []list.Item{
-		item("Full shell config"),
-		item("Zsh/Oh My Zsh config"),
-		item("Vim + plugins config"),
-		item("tmux config"),
-		item("Temporary Zsh config (no plugins)"),
-		item("Temporary Vim config (no plugins)"),
-		item("Temporary tmux config"),
-		item("Core packages"),
-		item("Design packages"),
-		item("Core GUI packages"),
-		item("Design GUI packages"),
+	items := []list.Item{item("Full shell config")}
+
+	// Add installers to the list
+	for _, v := range Config.Installers {
+		items = append(items, item(v.HelpMessage))
 	}
 
-	// Remove duplicate actions with name "Updating package manager", "Creating .shell.tmp directory" combine uninstall scripts
-	filteredActions := []action{}
-	alreadyUpdated := false
-	alreadyCreatedTmpDir := false
-	uninstallCommands := []string{}
-	for _, a := range actions {
-		if a.name == "Updating package manager" {
-			if alreadyUpdated {
-				continue
-			} else {
-				alreadyUpdated = true
-			}
-		} else if a.name == "Creating .shell.tmp directory" {
-			if alreadyCreatedTmpDir {
-				continue
-			} else {
-				alreadyCreatedTmpDir = true
-			}
-		} else if a.name == "Saving uninstall script" {
-			for _, c := range strings.Split(a.command, " && ") {
-				tc := strings.TrimSpace(c)
-				if tc != "rm -rf ~/.shell.tmp" {
-					uninstallCommands = append(uninstallCommands, tc)
-				}
-			}
-			continue
-		}
-		filteredActions = append(filteredActions, a)
+	// Add temporary installers to the list
+	for _, v := range Config.Installers {
+		// Create temporary help message and append to items
+		hm := strings.Fields(v.HelpMessage)
+		message := "Temporarily " + strings.ToLower(hm[0]) + " " + strings.Join(hm[1:], " ")
+		items = append(items, item(message))
 	}
-	if len(uninstallCommands) > 0 {
-		uninstallCommand := fmt.Sprintf("echo \"%s && rm -rf ~/.shell.tmp\" > ~/.shell.tmp/uninstall.sh", strings.Join(uninstallCommands, " && "))
-		filteredActions = append(filteredActions, action{uninstallCommand, "Saving uninstall script"})
+
+	// Add package groups to the list
+	for packageGroup := range PM.packages {
+		items = append(items, item(packageGroup+" packages"))
 	}
 
 	// Setup list
@@ -314,7 +256,7 @@ func tui(tuiOptions []string) {
 	l.Styles.HelpStyle = helpStyle
 
 	// Setup model
-	m := model{list: l, spinner: s, actions: filteredActions, firstFlagInstall: len(filteredActions) > 1}
+	m := model{list: l, spinner: s, actions: actions, firstFlagInstall: len(actions) > 1}
 
 	// Run the program
 	if _, err := tea.NewProgram(m).Run(); err != nil {

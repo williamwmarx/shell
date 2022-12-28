@@ -4,6 +4,7 @@
 # Directory to install dotfiles in when --tmp invoked
 tmp_dir = "~/.@repo_name.tmp"
 custom_install_url = "https://marx.sh"
+help_description = "Install my default packages and dotfiles"
 
 
 ####################

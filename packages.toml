@@ -1,213 +1,203 @@
-# Core packages
-[core.bat]
-name = "bat"
+####################
+##      CORE  	  ##
+####################
+[Core]
+description = "Core packages I use daily"
+
+[Core.bat]
 description = "A cat clone with wings."
 url = "https://github.com/sharkdp/bat"
-apt_name = "bat"
-brew_name = "bat"
-dnf_name = "bat"
-pacman_name = "bat"
+apt = "bat"
+brew = "bat"
+dnf = "bat"
+pacman = "bat"
 
-[core.curl]
-name = "cURL"
+[Core.cURL]
 description = "A command line tool for transferring data with URL syntax."
 url = "https://curl.se/"
-apt_name = "curl"
-brew_name = "curl"
-dnf_name = "curl"
-pacman_name = "curl"
+apt = "curl"
+brew = "curl"
+dnf = "curl"
+pacman = "curl"
 
-[core.exa]
-name = "exa"
+[Core.exa]
 description = "A modern replacement for ls."
 url = "https://the.exa.website/"
-apt_name = "exa"
-brew_name = "exa"
-dnf_name = "exa"
-pacman_name = "exa"
+apt = "exa"
+brew = "exa"
+dnf = "exa"
+pacman = "exa"
 
-[core.fd]
-name = "fd"
+[Core.fd]
 description = "A simple, fast and user-friendly alternative to find."
 url = "https://github.com/sharkdp/fd"
-apt_name = "fd-find"
-brew_name = "fd"
-dnf_name = "fd-find"
-pacman_name = "fd"
+apt = "fd-find"
+brew = "fd"
+dnf = "fd-find"
+pacman = "fd"
 
-[core.fzf]
-name = "fzf"
+[Core.fzf]
 description = "A command-line fuzzy finder."
 url = "https://github.com/junegunn/fzf"
-apt_name = "fzf"
-brew_name = "fzf"
-dnf_name = "fzf"
-pacman_name = "fzf"
+apt = "fzf"
+brew = "fzf"
+dnf = "fzf"
+pacman = "fzf"
 
-[core.git]
-name = "git"
+[Core.git]
 description = "A fast, scalable, distributed revision control system."
 url = "https://git-scm.com/"
-apt_name = "git"
-brew_name = "git"
-dnf_name = "git"
-pacman_name = "git"
+apt = "git"
+brew = "git"
+dnf = "git"
+pacman = "git"
 
-[core.gnupg]
-name = "GnuPG"
+[Core.GnuPG]
 description = "A complete and free implementation of the OpenPGP standard."
 url = "https://gnupg.org/"
-apt_name = "gnupg"
-brew_name = "gnupg"
-dnf_name = "gnupg"
-pacman_name = "gnupg"
+apt = "gnupg"
+brew = "gnupg"
+dnf = "gnupg"
+pacman = "gnupg"
 
-[core.node]
-name = "Node"
+[Core.Node]
 description = "A JavaScript runtime built on Chrome's V8 JavaScript engine."
 url = "https://nodejs.org/"
-apt_name = "nodejs"
-brew_name = "node"
-dnf_name = "nodejs"
-pacman_name = "nodejs"
+apt = "nodejs"
+brew = "node"
+dnf = "nodejs"
+pacman = "nodejs"
 
-[core.openssl]
-name = "OpenSSL"
+[Core."Oh My Zsh"]
+description = "A delightful community-driven framework for managing your zsh configuration."
+install_command = "sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"
+
+[Core.OpenSSL]
 description = "A robust, commercial-grade, and full-featured toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols."
 url = "https://www.openssl.org/"
-apt_name = "openssl"
-brew_name = "openssl"
-dnf_name = "openssl"
-pacman_name = "openssl"
+apt = "openssl"
+brew = "openssl"
+dnf = "openssl"
+pacman = "openssl"
 
-[core.ripgrep]
-name = "ripgrep"
+[Core.ripgrep]
 description = "A line-oriented search tool that recursively searches your current directory for a regex pattern."
 url = "https://github.com/BurntSushi/ripgrep"
-apt_name = "ripgrep"
-brew_name = "ripgrep"
-dnf_name = "ripgrep"
-pacman_name = "ripgrep"
+apt = "ripgrep"
+brew = "ripgrep"
+dnf = "ripgrep"
+pacman = "ripgrep"
 
-[core.tmux]
-name = "tmux"
+[Core.tmux]
 description = "A terminal multiplexer."
 url = "https://github.com/tmux/tmux"
-apt_name = "tmux"
-brew_name = "tmux"
-dnf_name = "tmux"
-pacman_name = "tmux"
+apt = "tmux"
+brew = "tmux"
+dnf = "tmux"
+pacman = "tmux"
 
-[core.vim]
-name = "Vim"
+[Core.Vim]
 description = "A highly configurable text editor built to enable efficient text editing."
 url = "https://www.vim.org/"
-apt_name = "vim"
-brew_name = "vim"
-dnf_name = "vim"
-pacman_name = "vim"
+apt = "vim"
+brew = "vim"
+dnf = "vim"
+pacman = "vim"
 
-[core.zsh]
-name = "Zsh"
+[Core.Zsh]
 description = "A shell designed for interactive use, although it is also a powerful scripting language."
 url = "https://www.zsh.org/"
-apt_name = "zsh"
-brew_name = "zsh"
-dnf_name = "zsh"
-pacman_name = "zsh"
+apt = "zsh"
+brew = "zsh"
+dnf = "zsh"
+pacman = "zsh"
 
-# Design packages
-[design.ffmpeg]
-name = "FFmpeg"
+
+####################
+##     DESIGN  	  ##
+####################
+[Design.FFmpeg]
 description = "A complete, cross-platform solution to record, convert and stream audio and video."
 url = "https://ffmpeg.org/"
-apt_name = "ffmpeg"
-brew_name = "ffmpeg"
-dnf_name = "ffmpeg-free"
-pacman_name = "ffmpeg"
+apt = "ffmpeg"
+brew = "ffmpeg"
+dnf = "ffmpeg-free"
+pacman = "ffmpeg"
 
-# GUI Core apps
-[gui_core.clean_my_mac]
-name = "Clean My Mac"
+
+####################
+##    GUI CORE 	  ##
+####################
+["GUI Core"."Clean My Mac"]
 description = "A macOS app to clean up your Mac."
 url = "https://macpaw.com/cleanmymac"
-brew_cask_name = "cleanmymac"
+brew = "--cask cleanmymac"
 
-[gui_core.dropbox]
-name = "Dropbox"
+["GUI Core".Dropbox]
 description = "A file hosting service that offers cloud storage, file synchronization, personal cloud."
 url = "https://www.dropbox.com/"
-brew_cask_name = "dropbox"
+brew = "--cask dropbox"
 
-[gui_core.docker]
-name = "Docker Desktop"
+["GUI Core"."Docker Desktop"]
 description = "A desktop app for MacOS and Windows machines for the building and sharing of containerized applications and microservices."
 url = "https://www.docker.com/products/docker-desktop"
-brew_cask_name = "docker"
+brew = "--cask docker"
 
-[gui_core.iina]
-name = "IINA"
+["GUI Core".IINA]
 description = "The modern video player for macOS."
 url = "https://iina.io/"
-brew_cask_name = "iina"
+brew = "--cask iina"
 
-[gui_core.iterm2]
-name = "iTerm2"
+["GUI Core".iTerm2]
 description = "A terminal emulator for macOS that does amazing things."
 url = "https://iterm2.com/"
-brew_cask_name = "iterm2"
+brew = "--cask iterm2"
 
-[gui_core.little_snitch]
-name = "Little Snitch"
+["GUI Core"."Little Snitch"]
 description = "A firewall application for macOS that monitors outgoing network connections and allows or denies them."
 url = "https://www.obdev.at/products/littlesnitch/index.html"
-brew_cask_name = "little-snitch"
+brew = "--cask little-snitch"
 
-[gui_core.mullvad]
-name = "Mullvad VPN"
+["GUI Core"."Mullvad VPN"]
 description = "A VPN service that helps keep your online activity, identity, and location private."
 url = "https://mullvad.net/en/"
-brew_cask_name = "mullvadvpn"
+brew = "--cask mullvadvpn"
 
-[gui_core.parallels]
-name = "Parallels Desktop"
+["GUI Core"."Parallels Desktop"]
 description = "A software for running Windows, Linux, or any other operating system on a Mac without rebooting."
 url = "https://www.parallels.com/products/desktop/"
-brew_cask_name = "parallels"
+brew = "--cask parallels"
 
-[gui_core.raycast]
-name = "Raycast"
+["GUI Core".Raycast]
 description = "A smart command line productivity tool for macOS."
 url = "https://raycast.com/"
-brew_cask_name = "raycast"
+brew = "--cask raycast"
 
-[gui_core.zoom]
-name = "Zoom"
+["GUI Core".Zoom]
 description = "A video conferencing, online chat, and web conferencing software."
 url = "https://zoom.us/"
-brew_cask_name = "zoomus"
+brew = "--cask zoomus"
 
-# GUI Design apps
-[gui_design.adobe_cc]
-name = "Adobe Creative Cloud"
+
+####################
+##   GUI DESIGN	  ##
+####################
+["GUI Design"."Adobe Creative Cloud"]
 description = "A collection of desktop and mobile apps and services for photography, design, video, web, UX and more."
 url = "https://www.adobe.com/creativecloud.html"
-brew_cask_name = "adobe-creative-cloud"
+brew = "--cask adobe-creative-cloud"
 
-[gui_design.glyphs]
-name = "Glyphs"
+["GUI Design".Glyphs]
 description = "A powerful font editor for macOS."
 url = "https://glyphsapp.com/"
-brew_cask_name = "glyphs"
+brew = "--cask glyphs"
 
-[gui_design.rhino3d]
-name = "Rhino 3D"
+["GUI Design"."Rhino 3D"]
 description = "A 3D modeling software for Windows, macOS, and Linux."
 url = "https://www.rhino3d.com/"
-brew_cask_name = "rhino"
+brew = "--cask rhino"
 
-[gui_design.max_msp]
-name = "Cycling ’74 Max/MSP"
+["GUI Design"."cycling ‘74 Max/MSP"]
 description = "A visual programming language for music, audio, and multimedia."
 url = "https://cycling74.com/products/max/"
-brew_cask_name = "cycling74-max"
+brew = "--cask cycling74-max"

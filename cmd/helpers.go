@@ -1,25 +1,30 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
-	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/google/go-github/github"
 )
 
-////////////////////////////
-//         UTILS          //
-////////////////////////////
+///////////////////////////
+//     GENERAL UTILS     //
+///////////////////////////
+
+// Check if a command exists on the system
+func commandExists(commandName string) bool {
+	_, err := exec.LookPath(commandName)
+	return err == nil
+}
 
 // Run a system command and get output
-func commandOutput(command string) string {
+func runCommand(command string) string {
 	cmd := exec.Command("sh", "-c", command)
 	stdout, err := cmd.Output()
 	if err != nil {
@@ -28,19 +33,9 @@ func commandOutput(command string) string {
 	return string(stdout)
 }
 
-// Get path to this repository on GitHub
-func RepoPath() string {
-	gitRemoteOriginURL := commandOutput("git config --get remote.origin.url")
-	splitURL := strings.Split(strings.TrimSpace(gitRemoteOriginURL), "/")
-	return strings.Join(splitURL[len(splitURL)-2:], "/")
-}
-
-var basePath string = fmt.Sprintf("https://raw.githubusercontent.com/%s/universalize/", RepoPath())
-
-// Download a file from this repo and return as byte array
-func download(path string) []byte {
+// Download a file and return as byte array
+func download(url string) []byte {
 	// Get request
-	url := basePath + path
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -57,48 +52,19 @@ func download(path string) []byte {
 	return b
 }
 
-// Create curl download command text given relative path in this repo and output path
-func formatCurl(repoPath, outputPath string) string {
-	return fmt.Sprintf("curl -fsSLo %s %s%s", outputPath, basePath, repoPath)
-}
+///////////////////////////
+//        CONFIG         //
+///////////////////////////
 
-// Check if a command exists on the system
-func commandExists(commandName string) bool {
-	_, err := exec.LookPath(commandName)
-	return err == nil
-}
-
-// Run a system command
-func runCommand(command string) {
-	// Get home directory, and replace all instances of ~ with it
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	command = strings.ReplaceAll(command, "~", home)
-
-	// Split commands by && and run each one
-	for _, c := range strings.Split(command, "&&") {
-		args := strings.Fields(strings.TrimSpace(c))
-		cmd := exec.Command(args[0], args[1:]...)
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
-// //////////////////////////
-//
-//	GET CONFIG       //
-//
-// //////////////////////////
+// Structs to store contents of config.toml
 type (
 	config struct {
-		TmpDir           string `toml:"tmp_dir"`
-		CustomInstallURL string `toml:"custom_install_url"`
-		Sync             map[string]targetClass
-		Installers       map[string]Installer
+		TmpDir          string `toml:"tmp_dir"`
+		InstallURL      string `toml:"custom_install_url"`
+		HelpDescription string `toml:"help_description"`
+		Sync            map[string]targetClass
+		Installers      map[string]Installer
+		Metadata        metadata
 	}
 
 	targetClass struct {
@@ -119,185 +85,171 @@ type (
 		Install     map[string]string
 		TmpInstall  map[string]string `toml:"tmp_install"`
 	}
+
+	metadata struct {
+		User     string
+		Repo     string
+		BaseURL  string
+		GitPaths []string
+	}
 )
 
-// Unmarshall config.toml file
+// Create map of repo paths and local paths for all sync targets
+func (c *config) SyncTargets() map[string]string {
+	targets := make(map[string]string)
+	for _, s := range Config.Sync {
+		for _, t := range s.Targets {
+			targets[t.RepoPath] = t.LocalPath
+		}
+	}
+	return targets
+}
+
+// Get all paths in remote GitHub repo
+func remoteGitPaths(user, repo, branch string) []string {
+	// Get tree from GitHub API
+	client := github.NewClient(nil)
+	tree, _, err := client.Git.GetTree(context.Background(), user, repo, branch, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Get paths from tree
+	var gitPaths []string
+	for _, entry := range tree.Entries {
+		gitPaths = append(gitPaths, entry.GetPath())
+	}
+
+	return gitPaths
+}
+
+// Unmarshall config.toml file and add metadata
 func getConfig() config {
-	// Read text of TOML file
-	configToml, err := os.ReadFile("config.toml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Unmarshall TOML file
 	var c config
-	_, err = toml.Decode(string(configToml), &c)
+
+	// Get git repo remote origin url and split into user and repo
+	// We need to do this first to get the remote config file
+	gitRemoteOriginURL := runCommand("git config --get remote.origin.url")
+	splitURL := strings.Split(strings.TrimSpace(gitRemoteOriginURL), "/")
+	c.Metadata.User = splitURL[len(splitURL)-2]
+	c.Metadata.Repo = splitURL[len(splitURL)-1]
+
+	// Get base URL for raw GitHub user content
+	branch := strings.TrimSpace(runCommand("git rev-parse --abbrev-ref HEAD"))
+	c.Metadata.BaseURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/", c.Metadata.User, c.Metadata.Repo, branch)
+
+	// Read text of TOML file
+	configToml := download(c.Metadata.BaseURL + "config.toml")
+
+	// Unmarshall TOML file
+	_, err := toml.Decode(string(configToml), &c)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// If no custom install url, set install url
+	if c.InstallURL == "" {
+		c.InstallURL = c.Metadata.BaseURL + "install.sh"
+	}
+
+	// Get all paths in remote GitHub repo
+	c.Metadata.GitPaths = remoteGitPaths(c.Metadata.User, c.Metadata.Repo, branch)
+
 	return c
 }
 
+// Make config data globally available
 var Config config = getConfig()
 
-////////////////////////////
-//      GET PACKAGES      //
-////////////////////////////
+///////////////////////////
+//    PACKAGE MANAGER    //
+///////////////////////////
 
-// Struct to hold all package info
+// Store package manager commands and available packages
 type (
-	pkgs struct {
-		Core      map[string]pkg
-		Design    map[string]pkg
-		GuiCore   map[string]pkg `toml:"gui_core"`
-		GuiDesign map[string]pkg `toml:"gui_design"`
+	packageManager struct {
+		commands pmCommands
+		packages pkgs
 	}
 
-	pkg struct {
-		Name           string
-		Description    string
-		URL            string `toml:"url"`
-		AptName        string `toml:"apt_name"`
-		BrewName       string `toml:"brew_name"`
-		BrewCaskName   string `toml:"brew_cask_name"`
-		DnfName        string `toml:"dnf_name"`
-		PacmanName     string `toml:"pacman_name"`
-		InstallCommand string `toml:"install_command"`
+	pmCommands struct {
+		name         string
+		installCmd   string
+		uninstallCmd string
+		updateCmd    string
 	}
+
+	pkgs map[string]map[string]map[string]string
 )
 
-// Get a package by name
-func (packs *pkgs) packageByName(name string) pkg {
-	packageGroups := reflect.ValueOf(&packs).Elem().Elem()
-	for i := 0; i < packageGroups.NumField(); i++ {
-		p := packageGroups.Field(i).MapRange()
-		for p.Next() {
-			if p.Value().FieldByName("Name").String() == name {
-				return p.Value().Interface().(pkg)
+// Get a package by its name
+func (packages *pkgs) packageByName(name string) map[string]string {
+	for _, group := range *packages {
+		for pName, p := range group {
+			if pName == name {
+				return p
 			}
 		}
 	}
-	return pkg{}
+	return map[string]string{}
 }
 
-// Get all packages in a group given its name
-func (packs *pkgs) packageGroup(groupName string) []pkg {
-	var packages []pkg
-	// Get all packages in group
-	p := reflect.ValueOf(&packs).Elem().Elem().FieldByName(groupName).MapRange()
-	for p.Next() {
-		packages = append(packages, p.Value().Interface().(pkg))
-	}
-	// Sort by alphabetical order, irrespective of case
-	sort.Slice(packages, func(i, j int) bool {
-		return strings.ToLower(packages[i].Name) < strings.ToLower(packages[j].Name)
-	})
-	return packages
+// Get system install command for a given package
+func (pm *packageManager) installCmd(name string) string {
+	return pm.commands.installCmd + " " + pm.packages.packageByName(name)[pm.commands.name]
 }
 
-// Get all packages from TOML file
-func getPackages() pkgs {
-	// Download TOML file from this repo
-	tomlText := download("packages/packages.toml")
-
-	// Unmarshal TOML file into struct
-	var packages pkgs
-	_, err := toml.Decode(string(tomlText), &packages)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return packages
+// Get system uninstall command for a given package
+func (pm *packageManager) uninstallCmd(name string) string {
+	return pm.commands.uninstallCmd + " " + pm.packages.packageByName(name)[pm.commands.name]
 }
 
-var Packages pkgs = getPackages()
-
-////////////////////////////
-//    INSTALL PACKAGES    //
-////////////////////////////
-
-// Keep track of package manager commands
-type packageManager struct {
-	name         string
-	installCmd   string
-	uninstallCmd string
-	updateCmd    string
-}
-
-// Get system package name
-func (pm *packageManager) systemPackageName(pack pkg) string {
-	var pName string
-	switch pm.name {
-	case "apt":
-		pName = pack.AptName
-	case "brew":
-		if reflect.ValueOf(&pack).Elem().FieldByName("BrewCaskName").String() != "" {
-			pName = "--cask " + pack.BrewCaskName
-		} else {
-			pName = pack.BrewName
-		}
-	case "dnf":
-		pName = pack.DnfName
-	case "pacman":
-		pName = pack.PacmanName
-	}
-	return pName
-}
-
-// Get install command for a given package
-func (pm *packageManager) installCommand(p pkg) string {
-	return fmt.Sprintf("%s %s", pm.installCmd, pm.systemPackageName(p))
-}
-
-// Get uninstall command for a given package
-func (pm *packageManager) uninstallCommand(p pkg) string {
-	return fmt.Sprintf("%s %s", pm.uninstallCmd, pm.systemPackageName(p))
-}
-
-// Get system pacakge manager install command
+// Get system pacakge manager commands and listed packages
 func getPackageManager() packageManager {
 	var pm packageManager
+
+	// Get package manager commands
 	if commandExists("pacman") {
-		pm = packageManager{
+		pm.commands = pmCommands{
 			name:         "pacman",
 			installCmd:   "pacman -S --no-confirm",
 			uninstallCmd: "pacman -Rs --no-confirm",
 			updateCmd:    "pacman -Syu",
 		}
 	} else if commandExists("dnf") {
-		pm = packageManager{
+		pm.commands = pmCommands{
 			name:         "dnf",
 			installCmd:   "dnf install -y",
 			uninstallCmd: "dnf remove -y",
 			updateCmd:    "dnf update",
 		}
 	} else if commandExists("brew") {
-		pm = packageManager{
+		pm.commands = pmCommands{
 			name:         "brew",
 			installCmd:   "brew install",
 			uninstallCmd: "brew uninstall",
 			updateCmd:    "brew upgrade",
 		}
 	} else if commandExists("apt") {
-		pm = packageManager{
+		pm.commands = pmCommands{
 			name:         "apt",
 			installCmd:   "apt install -y",
 			uninstallCmd: "apt remove -y",
 			updateCmd:    "apt update",
 		}
 	}
+
+	// Download packages TOML file from this repo
+	tomlText := download(Config.Metadata.BaseURL + "packages.toml")
+
+	// Unmarshal TOML file into struct
+	_, err := toml.Decode(string(tomlText), &pm.packages)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return pm
 }
 
-var pm packageManager = getPackageManager()
-
-// Get all install actions
-func installActions(packageGroups ...string) []action {
-	var actions []action
-	if len(packageGroups) > 0 {
-		for _, pg := range packageGroups {
-			for _, p := range Packages.packageGroup(pg) {
-				actions = append(actions, action{pm.installCommand(p), fmt.Sprintf("Installing %s", p.Name)})
-			}
-		}
-	}
-	return actions
-}
+// Make package manager and packages available globally
+var PM packageManager = getPackageManager()
