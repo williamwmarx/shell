@@ -147,6 +147,9 @@ func getConfig() config {
 		log.Fatal(err)
 	}
 
+	// Update TmpDir with repo info
+	c.TmpDir = strings.ReplaceAll(c.TmpDir, "@repo_name", c.Metadata.Repo)
+
 	// If no custom install url, set install url
 	if c.InstallURL == "" {
 		c.InstallURL = c.Metadata.BaseURL + "install.sh"

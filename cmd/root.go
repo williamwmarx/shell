@@ -40,8 +40,15 @@ func Execute() {
 
 // Add flags to the root command
 func init() {
+	// Update default help message
+	rootCmd.Flags().BoolP("help", "h", false, "Show this help message")
+
+	// Add flag for temporary install
+	rootCmd.Flags().BoolP("tmp", "", false, "Install temporarily to "+Config.TmpDir)
+
+	// Add flags for all installers
 	for flag, v := range Config.Installers {
-		long_help_message := v.Description
+		long_help_message := v.HelpMessage
 		if flag == "full" {
 			long_help_message = "Full system config"
 		}
