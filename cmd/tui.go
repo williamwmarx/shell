@@ -223,6 +223,17 @@ func tui(tuiOptions map[string]bool) {
 				actions = append(actions, install(flag, tmp)...)
 			}
 		}
+
+		// Remove duplicate actions
+		exportActions := []action{}
+		executedCommands := []string{}
+		for _, a := range actions {
+			if !contains(executedCommands, a.command) {
+				exportActions = append(exportActions, a)
+				executedCommands = append(executedCommands, a.command)
+			}
+		}
+		actions = exportActions
 	}
 
 	// No options passed, launch the TUI list selector
