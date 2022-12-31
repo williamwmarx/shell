@@ -114,6 +114,12 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if ok {
 				if string(i) == "Full shell config" {
 					m.actions = append(m.actions, fullConfig()...)
+				} else if strings.Contains(string(i), "packages") {
+					// Add package manager update action
+					m.actions = append(m.actions, action{"Updating package manager", PM.commands.updateCmd})
+					// Add packages actions
+					packageGroup := strings.ReplaceAll(string(i), " packages", "")
+					m.actions = append(m.actions, PM.packageInstallActions(packageGroup)...)
 				} else {
 					// Iterate through installers to find a match and add the corresponding actions
 					for flag, v := range Config.Installers {
@@ -261,20 +267,34 @@ func tui(tuiOptions map[string]bool) {
 	items := []list.Item{item("Full shell config")}
 
 	// Add installers to the list
+	var installers []string
 	for _, v := range Config.Installers {
-		items = append(items, item(v.HelpMessage))
+		installers = append(installers, v.HelpMessage)
+	}
+	for _, i := range sorted(installers) {
+		items = append(items, item(i))
 	}
 
 	// Add temporary installers to the list
+	var temporaryInstallers []string
 	for _, v := range Config.Installers {
 		// Create temporary help message and append to items
 		hm := strings.Fields(v.HelpMessage)
 		message := "Temporarily " + strings.ToLower(hm[0]) + " " + strings.Join(hm[1:], " ")
-		items = append(items, item(message))
+		temporaryInstallers = append(temporaryInstallers, message)
+	}
+	for _, ti := range sorted(temporaryInstallers) {
+		items = append(items, item(ti))
 	}
 
-	// Add package groups to the list
+
+	// Add package groups to the list, sorted by name irrespective of case
+	var packageGroups []string
 	for packageGroup := range PM.packages {
+		packageGroups = append(packageGroups, packageGroup)
+	}
+
+	for _, packageGroup := range sorted(packageGroups) {
 		items = append(items, item(packageGroup+" packages"))
 	}
 

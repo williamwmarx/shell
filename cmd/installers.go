@@ -133,65 +133,13 @@ func fullConfig() []action {
 	for group := range PM.packages {
 		packageGroups = append(packageGroups, group)
 	}
-	sort.SliceStable(packageGroups, func(i, j int) bool {
-		return strings.ToLower(packageGroups[i]) < strings.ToLower(packageGroups[j])
-	})
-
-	// Type for package install actions
-	type packageAction struct {
-		a        action
-		requires string
-	}
 
 	// Add package install actions and note requirements
-	for _, packageGroup := range packageGroups {
-		var packageActions []packageAction
-
-		// Sort packageNames by name, irrespective of case
-		var packageNames []string
-		for packageName := range PM.packages[packageGroup] {
-			packageNames = append(packageNames, packageName)
+	for _, packageGroup := range sorted(packageGroups) {
+		// Add packages actions
+		for _, pia := range PM.packageInstallActions(packageGroup) {
+			actions = append(actions, pia)
 		}
-		sort.SliceStable(packageNames, func(i, j int) bool {
-			return strings.ToLower(packageNames[i]) < strings.ToLower(packageNames[j])
-		})
-
-		// Add package install actions
-		for _, packageName := range packageNames {
-			// Ignore description, as it's not a package
-			if packageName != "description" {
-				// Get install command for package and add to actions if it exists
-				installCommand := PM.installCmd(packageName)
-				if installCommand != "" {
-					// Get requirement for package
-					var requires string
-					if r, ok := PM.packages.packageByName(packageName)["requires"]; ok {
-						requires = r
-					}
-					// Add package install action to packageActions
-					a := action{"Installing " + packageName, installCommand}
-					packageActions = append(packageActions, packageAction{a, requires})
-				}
-			}
-		}
-
-		// Sort package actions by message, irrespective of case
-		sort.SliceStable(packageActions, func(i, j int) bool {
-			return strings.ToLower(packageActions[i].a.msg) < strings.ToLower(packageActions[j].a.msg)
-		})
-
-		// Add package actions to actions, ensuring packages that require others are installed after their dependencies
-		var packagesWithDependencies []action
-		for _, packageAction := range packageActions {
-			if packageAction.requires != "" {
-				packagesWithDependencies = append(packagesWithDependencies, packageAction.a)
-			} else {
-				actions = append(actions, packageAction.a)
-			}
-		}
-
-		// Add packages with dependencies to actions
-		actions = append(actions, packagesWithDependencies...)
 	}
 
 	// Clone this repo into home directory

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -66,6 +67,14 @@ func contains(s []string, e string) bool {
 func parentDir(path string) string {
 	splitLocalPath := strings.Split(path, "/")
 	return strings.Join(splitLocalPath[:len(splitLocalPath)-1], "/")
+}
+
+// Sort an array of strings, irrespective of case
+func sorted(s []string) []string {
+	sort.Slice(s, func(i, j int) bool {
+		return strings.ToLower(s[i]) < strings.ToLower(s[j])
+	})
+	return s
 }
 
 ///////////////////////////
@@ -249,6 +258,59 @@ func (pm *packageManager) uninstallCmd(name string) string {
 
 	// Package not found, return empty string
 	return ""
+}
+
+// Type for package install actions
+type packageAction struct {
+	a        action
+	requires string
+}
+
+// Get system install commands for a given package group
+func (pm *packageManager) packageInstallActions(packageGroupName string) []action {
+	// Sort packageNames by name, irrespective of case
+	var packageNames []string
+	for packageName := range pm.packages[packageGroupName] {
+		packageNames = append(packageNames, packageName)
+	}
+
+	// Add package install commands
+	var packageActions []packageAction
+	for _, packageName := range sorted(packageNames) {
+		// Ignore description, as it's not a package
+		if packageName != "description" {
+			// Get install command for package and add to actions if it exists
+			installCommand := pm.installCmd(packageName)
+			if installCommand != "" {
+				// Get requirement for package
+				var requires string
+				if r, ok := pm.packages.packageByName(packageName)["requires"]; ok {
+					requires = r
+				}
+
+				// Add package install action to packageActions
+				a := action{"Installing " + packageName, installCommand}
+
+				packageActions = append(packageActions, packageAction{a, requires})
+			}
+		}
+	}
+
+	// Add package actions to actions, ensuring packages that require others are installed after their dependencies
+	var actions []action
+	var packagesWithDependencies []action
+	for _, pa := range packageActions {
+		if pa.requires != "" {
+			packagesWithDependencies = append(packagesWithDependencies, pa.a)
+		} else {
+			actions = append(actions, pa.a)
+		}
+	}
+
+	// Add packages with dependencies to actions
+	actions = append(actions, packagesWithDependencies...)
+
+	return actions
 }
 
 // Get system pacakge manager commands and listed packages
