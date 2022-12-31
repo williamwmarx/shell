@@ -31,6 +31,9 @@ func install(flag string, tmp bool) []action {
 		}
 	}
 
+	// Ensure install dir exists
+	runCommand("mkdir -p " + installDir)
+
 	// Keep track of packages to uninstall if tmp install
 	installFound := false
 	var uninstallCommands []string
@@ -69,11 +72,11 @@ func install(flag string, tmp bool) []action {
 				}
 				if matched {
 					// If file matches, add properly formatted curl command to download it
-
 					var localPath string
-					if vanillaLocalPath, ok := Config.SyncTargets()[strings.ReplaceAll(p, "vanilla_", "")]; tmp && ok {
-						// If tmp install and file is in vanilla file exists, use that path
-						localPath = vanillaLocalPath
+					if tmp && contains(Config.Metadata.GitPaths, p) {
+						// Get local parent dir of non-tmp install and add vanilla file name
+						splitPath := strings.Split(p, "/")
+						localPath = fmt.Sprintf("%s/%s%s", installDir, parentDir(p), splitPath[len(splitPath)-1])
 					} else {
 						if lp := Config.SyncTargets()[p]; lp != "" {
 							// If file is in sync targets, use that path
@@ -86,13 +89,9 @@ func install(flag string, tmp bool) []action {
 					localPath = strings.ReplaceAll(localPath, "~", installDir)
 					curl := fmt.Sprintf("curl -fsSLo %s %s", localPath, Config.Metadata.BaseURL+p)
 
-					// Get parent directory of localPath
-					splitLocalPath := strings.Split(localPath, "/")
-					parentDir := strings.Join(splitLocalPath[:len(splitLocalPath)-1], "/")
-
 					// If parent directory is not ~, ensure directory exists before running curl command
-					if parentDir != installDir {
-						curl = fmt.Sprintf("mkdir -p %s; %s", parentDir, curl)
+					if pd := parentDir(localPath); pd != installDir {
+						curl = fmt.Sprintf("mkdir -p %s; %s", pd, curl)
 					}
 
 					matchedFiles = append(matchedFiles, curl)
@@ -104,7 +103,7 @@ func install(flag string, tmp bool) []action {
 
 	// Create and add uninstall script if --tmp passed
 	if len(uninstallCommands) > 0 {
-		uninstallScript := strings.Join(uninstallCommands, "\n") + fmt.Sprintf("rm -rf %s", installDir)
+		uninstallScript := strings.Join(uninstallCommands, "; ") + fmt.Sprintf("; rm -rf %s", installDir)
 		uninstallAction := fmt.Sprintf("echo '%s' > %s/uninstall.sh", uninstallScript, installDir)
 		actions = append(actions, action{"Adding uninstall script", uninstallAction})
 	}

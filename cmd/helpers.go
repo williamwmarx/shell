@@ -62,6 +62,12 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+// Get parent directory of path
+func parentDir(path string) string {
+	splitLocalPath := strings.Split(path, "/")
+	return strings.Join(splitLocalPath[:len(splitLocalPath)-1], "/")
+}
+
 ///////////////////////////
 //        CONFIG         //
 ///////////////////////////

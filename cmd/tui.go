@@ -224,15 +224,36 @@ func tui(tuiOptions map[string]bool) {
 			}
 		}
 
-		// Remove duplicate actions
+		// Remove duplicate actions and (if necessary) consolidate uninstall script
 		exportActions := []action{}
 		executedCommands := []string{}
+		uninstallCommmads := []string{}
 		for _, a := range actions {
+			if a.msg == "Adding uninstall script" {
+				uninstallCommmads = append(uninstallCommmads, a.command)
+				continue
+			}
 			if !contains(executedCommands, a.command) {
 				exportActions = append(exportActions, a)
 				executedCommands = append(executedCommands, a.command)
 			}
 		}
+
+		var uninstallPath string
+		var uninstallCommands []string
+		if len(uninstallCommmads) > 1 {
+			for _, u := range uninstallCommmads {
+				ss := strings.Split(u, "'")
+				uninstallPath = ss[len(ss)-1][3:]
+				uc := strings.Split(ss[1], "; ")
+				uninstallCommands = append(uninstallCommands, uc[:len(uc)-1]...)
+			}
+			uninstallAction := fmt.Sprintf("echo '%s; rm -rf %s' > %s", strings.Join(uninstallCommands, "; "), parentDir(uninstallPath), uninstallPath)
+			exportActions = append(exportActions, action{"Adding uninstall script", uninstallAction})
+		} else if len(uninstallCommands) > 0 {
+			exportActions = append(exportActions, action{"Adding uninstall script", uninstallCommmads[0]})
+		}
+
 		actions = exportActions
 	}
 
