@@ -112,11 +112,10 @@ local_path = "~/.oh-my-zsh/themes/t3.zsh-theme"
 [installers.tmux]
 help_message = "Install tmux and config files"
 description = "Install [tmux](https://github.com/tmux/tmux) and [.tmux.conf](tmux/tmux.conf)"
-
-[installers.tmux.install]
-"Installing tmux" = "@install tmux"
-"Saving .tmux.conf" = "@save tmux/tmux.conf"
-
+install = [
+	{msg = "Installing tmux", cmd = "@install tmux"},
+	{msg = "Saving tmux config", cmd = "@save tmux/tmux.conf"}
+]
 
 ####################
 ##      Vim 		  ##
@@ -124,17 +123,16 @@ description = "Install [tmux](https://github.com/tmux/tmux) and [.tmux.conf](tmu
 [installers.vim]
 help_message = "Install vim and config files"
 description = "Install [Vim](https://github.com/vim/vim), my [.vimrc](vim/vimrc), and [skeleton files](vim/templates)"
-
-[installers.vim.install]
-"Installing Vim" = "@install Vim"
-"Saving .vimrc" = "@save vim/vimrc"
-"Saving template files" = "@save vim/templates/*"
-"Installing Vim plugins" = "vim +PluginInstall +qall"
-
-[installers.vim.tmp_install]
-"Installing Vim" = "@install Vim"
-"Saving .vimrc" = "@save vim/vanilla_vimrc"
-
+install = [
+	{msg = "Installing Vim", cmd = "@install Vim"},
+	{msg = "Saving .vimrc", cmd = "@save vim/vimrc"},
+	{msg = "Saving template files", cmd = "@save vim/templates/*"},
+	{msg = "Installing Vim plugins", cmd = "vim +PlugInstall +qall"},
+]
+tmp_install = [
+	{msg = "Installing Vim", cmd = "@install Vim"},
+	{msg = "Saving .vimrc", cmd = "@save vim/vanilla_vimrc"},
+]
 
 ####################
 ##      Zsh 		  ##
@@ -142,17 +140,17 @@ description = "Install [Vim](https://github.com/vim/vim), my [.vimrc](vim/vimrc)
 [installers.zsh]
 help_message = "Install Zsh and config files"
 description = "Install [Zsh](https://www.zsh.org/), [Oh-My-Zsh](https://ohmyz.sh/), [.zshrc](zsh/zshrc), [.aliases](zsh/aliases), [.functions](zsh/functions), and [Zsh theme](zsh/t3.zsh-theme)"
-
-[installers.zsh.install]
-"Installing Zsh" = "@install Zsh"
-"Installing Oh My Zsh" = "@install oh-my-zsh"
-"Saving .zshrc" = "@save zsh/zshrc"
-"Saving .aliases" = "@save zsh/aliases"
-"Saving .functions" = "@save zsh/functions"
-"Saving Zsh themes" = "@save zsh/*.zsh-theme"
-
-[installers.zsh.tmp_install]
-"Installing Zsh" = "@install Zsh"
-"Saving .zshrc" = "@save zsh/vanilla_zshrc"
-"Saving .aliases" = "@save zsh/aliases"
-"Saving .functions" = "@save zsh/functions"
+install = [
+	{msg = "Installing Zsh", cmd = "@install Zsh"},
+	{msg = "Installing Oh My Zsh", cmd = "@install oh-my-zsh"},
+	{msg = "Saving .zshrc", cmd = "@save zsh/zshrc"},
+	{msg = "Saving .aliases", cmd = "@save zsh/aliases"},
+	{msg = "Saving .functions", cmd = "@save zsh/functions"},
+	{msg = "Saving Zsh themes", cmd = "@save zsh/*.zsh-theme"},
+]
+tmp_install = [
+	{msg = "Installing Zsh", cmd = "@install Zsh"},
+	{msg = "Saving .zshrc", cmd = "@save zsh/vanilla_zshrc"},
+	{msg = "Saving .aliases", cmd = "@save zsh/aliases"},
+	{msg = "Saving .functions", cmd = "@save zsh/functions"},
+]

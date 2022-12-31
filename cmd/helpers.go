@@ -82,8 +82,8 @@ type (
 	Installer struct {
 		HelpMessage string `toml:"help_message"`
 		Description string
-		Install     map[string]string
-		TmpInstall  map[string]string `toml:"tmp_install"`
+		Install     []map[string]string
+		TmpInstall  []map[string]string `toml:"tmp_install"`
 	}
 
 	metadata struct {

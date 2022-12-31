@@ -37,22 +37,26 @@ func install(flag string, tmp bool) []action {
 
 	// Iterate through install actions, formatting properly, and adding to actions
 	var actions []action
-	for msg, a := range installer {
-		if strings.HasPrefix(a, "@install") {
+	for _, a := range installer {
+		// Get action parameters
+		msg := a["msg"]
+		cmd := a["cmd"]
+
+		if strings.HasPrefix(cmd, "@install") {
 			// Note that install was found
 			installFound = true
 
 			// Add package install action
-			name := strings.TrimSpace(strings.TrimPrefix(a, "@install"))
+			name := strings.TrimSpace(strings.TrimPrefix(cmd, "@install"))
 			actions = append(actions, action{msg, PM.installCmd(name)})
 
 			// Add uninstall command for package if --tmp passed
 			if tmp {
 				uninstallCommands = append(uninstallCommands, PM.uninstallCmd(name))
 			}
-		} else if strings.HasPrefix(a, "@save") {
+		} else if strings.HasPrefix(cmd, "@save") {
 			// Get file to save and turn into regex pattern — allows for wildcard matching
-			filesToSave := strings.TrimSpace(strings.TrimPrefix(a, "@save"))
+			filesToSave := strings.TrimSpace(strings.TrimPrefix(cmd, "@save"))
 			regexpPatttern := strings.ReplaceAll(filesToSave, "*", ".*")
 
 			// Find matches
