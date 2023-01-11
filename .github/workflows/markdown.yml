@@ -3,7 +3,7 @@ name: Build markdown files
 on: push
 
 jobs:
-  deploy:
+  markdown-build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
