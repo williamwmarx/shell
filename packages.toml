@@ -4,7 +4,7 @@
 [Core]
 description = "Core packages I use daily"
 
-[Core.bat]
+[Core.packages.bat]
 description = "A cat clone with wings."
 url = "https://github.com/sharkdp/bat"
 apt = "bat"
@@ -12,7 +12,7 @@ brew = "bat"
 dnf = "bat"
 pacman = "bat"
 
-[Core.cURL]
+[Core.packages.cURL]
 description = "A command line tool for transferring data with URL syntax."
 url = "https://curl.se/"
 apt = "curl"
@@ -20,7 +20,7 @@ brew = "curl"
 dnf = "curl"
 pacman = "curl"
 
-[Core.exa]
+[Core.packages.exa]
 description = "A modern replacement for ls."
 url = "https://the.exa.website/"
 apt = "exa"
@@ -28,7 +28,7 @@ brew = "exa"
 dnf = "exa"
 pacman = "exa"
 
-[Core.fd]
+[Core.packages.fd]
 description = "A simple, fast and user-friendly alternative to find."
 url = "https://github.com/sharkdp/fd"
 apt = "fd-find"
@@ -36,7 +36,7 @@ brew = "fd"
 dnf = "fd-find"
 pacman = "fd"
 
-[Core.fzf]
+[Core.packages.fzf]
 description = "A command-line fuzzy finder."
 url = "https://github.com/junegunn/fzf"
 apt = "fzf"
@@ -44,7 +44,7 @@ brew = "fzf"
 dnf = "fzf"
 pacman = "fzf"
 
-[Core.git]
+[Core.packages.git]
 description = "A fast, scalable, distributed revision control system."
 url = "https://git-scm.com/"
 apt = "git"
@@ -52,7 +52,7 @@ brew = "git"
 dnf = "git"
 pacman = "git"
 
-[Core.GnuPG]
+[Core.packages.GnuPG]
 description = "A complete and free implementation of the OpenPGP standard."
 url = "https://gnupg.org/"
 apt = "gnupg"
@@ -60,7 +60,7 @@ brew = "gnupg"
 dnf = "gnupg"
 pacman = "gnupg"
 
-[Core.Node]
+[Core.packages.Node]
 description = "A JavaScript runtime built on Chrome's V8 JavaScript engine."
 url = "https://nodejs.org/"
 apt = "nodejs"
@@ -68,13 +68,14 @@ brew = "node"
 dnf = "nodejs"
 pacman = "nodejs"
 
-[Core."Oh My Zsh"]
+[Core.packages."Oh My Zsh"]
 description = "A delightful community-driven framework for managing your zsh configuration."
+url = "https://ohmyz.sh/"
 requires = "Zsh"
 install_command = "sh -c \"$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"
 uninstall_command = "uninstall_oh_my_zsh"
 
-[Core.OpenSSL]
+[Core.packages.OpenSSL]
 description = "A robust, commercial-grade, and full-featured toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols."
 url = "https://www.openssl.org/"
 apt = "openssl"
@@ -82,7 +83,7 @@ brew = "openssl"
 dnf = "openssl"
 pacman = "openssl"
 
-[Core.ripgrep]
+[Core.packages.ripgrep]
 description = "A line-oriented search tool that recursively searches your current directory for a regex pattern."
 url = "https://github.com/BurntSushi/ripgrep"
 apt = "ripgrep"
@@ -90,7 +91,7 @@ brew = "ripgrep"
 dnf = "ripgrep"
 pacman = "ripgrep"
 
-[Core.tmux]
+[Core.packages.tmux]
 description = "A terminal multiplexer."
 url = "https://github.com/tmux/tmux"
 apt = "tmux"
@@ -98,7 +99,7 @@ brew = "tmux"
 dnf = "tmux"
 pacman = "tmux"
 
-[Core.Vim]
+[Core.packages.Vim]
 description = "A highly configurable text editor built to enable efficient text editing."
 url = "https://www.vim.org/"
 apt = "vim"
@@ -106,7 +107,7 @@ brew = "vim"
 dnf = "vim"
 pacman = "vim"
 
-[Core.Zsh]
+[Core.packages.Zsh]
 description = "A shell designed for interactive use, although it is also a powerful scripting language."
 url = "https://www.zsh.org/"
 apt = "zsh"
@@ -118,7 +119,10 @@ pacman = "zsh"
 ####################
 ##     DESIGN  	  ##
 ####################
-[Design.FFmpeg]
+[Design]
+description = "Packages for visual and sound design."
+
+[Design.packages.FFmpeg]
 description = "A complete, cross-platform solution to record, convert and stream audio and video."
 url = "https://ffmpeg.org/"
 apt = "ffmpeg"
@@ -130,52 +134,55 @@ pacman = "ffmpeg"
 ####################
 ##    GUI CORE 	  ##
 ####################
-["GUI Core"."Clean My Mac"]
+["GUI Core"]
+description = "GUI apps I use daily."
+
+["GUI Core".packages."Clean My Mac"]
 description = "A macOS app to clean up your Mac."
 url = "https://macpaw.com/cleanmymac"
 brew = "--cask cleanmymac"
 
-["GUI Core".Dropbox]
+["GUI Core".packages.Dropbox]
 description = "A file hosting service that offers cloud storage, file synchronization, personal cloud."
 url = "https://www.dropbox.com/"
 brew = "--cask dropbox"
 
-["GUI Core"."Docker Desktop"]
+["GUI Core".packages."Docker Desktop"]
 description = "A desktop app for MacOS and Windows machines for the building and sharing of containerized applications and microservices."
 url = "https://www.docker.com/products/docker-desktop"
 brew = "--cask docker"
 
-["GUI Core".IINA]
+["GUI Core".packages.IINA]
 description = "The modern video player for macOS."
 url = "https://iina.io/"
 brew = "--cask iina"
 
-["GUI Core".iTerm2]
+["GUI Core".packages.iTerm2]
 description = "A terminal emulator for macOS that does amazing things."
 url = "https://iterm2.com/"
 brew = "--cask iterm2"
 
-["GUI Core"."Little Snitch"]
+["GUI Core".packages."Little Snitch"]
 description = "A firewall application for macOS that monitors outgoing network connections and allows or denies them."
 url = "https://www.obdev.at/products/littlesnitch/index.html"
 brew = "--cask little-snitch"
 
-["GUI Core"."Mullvad VPN"]
+["GUI Core".packages."Mullvad VPN"]
 description = "A VPN service that helps keep your online activity, identity, and location private."
 url = "https://mullvad.net/en/"
 brew = "--cask mullvadvpn"
 
-["GUI Core"."Parallels Desktop"]
+["GUI Core".packages."Parallels Desktop"]
 description = "A software for running Windows, Linux, or any other operating system on a Mac without rebooting."
 url = "https://www.parallels.com/products/desktop/"
 brew = "--cask parallels"
 
-["GUI Core".Raycast]
+["GUI Core".packages.Raycast]
 description = "A smart command line productivity tool for macOS."
 url = "https://raycast.com/"
 brew = "--cask raycast"
 
-["GUI Core".Zoom]
+["GUI Core".packages.Zoom]
 description = "A video conferencing, online chat, and web conferencing software."
 url = "https://zoom.us/"
 brew = "--cask zoomus"
@@ -184,22 +191,25 @@ brew = "--cask zoomus"
 ####################
 ##   GUI DESIGN	  ##
 ####################
-["GUI Design"."Adobe Creative Cloud"]
+["GUI Design"]
+description = "GUI apps for visual and sound design."
+
+["GUI Design".packages."Adobe Creative Cloud"]
 description = "A collection of desktop and mobile apps and services for photography, design, video, web, UX and more."
 url = "https://www.adobe.com/creativecloud.html"
 brew = "--cask adobe-creative-cloud"
 
-["GUI Design".Glyphs]
+["GUI Design".packages.Glyphs]
 description = "A powerful font editor for macOS."
 url = "https://glyphsapp.com/"
 brew = "--cask glyphs"
 
-["GUI Design"."Rhino 3D"]
+["GUI Design".packages."Rhino 3D"]
 description = "A 3D modeling software for Windows, macOS, and Linux."
 url = "https://www.rhino3d.com/"
 brew = "--cask rhino"
 
-["GUI Design"."cycling ‘74 Max/MSP"]
+["GUI Design".packages."Cycling ‘74 Max/MSP"]
 description = "A visual programming language for music, audio, and multimedia."
 url = "https://cycling74.com/products/max/"
 brew = "--cask cycling74-max"

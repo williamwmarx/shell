@@ -70,7 +70,7 @@ func parentDir(path string) string {
 }
 
 // Sort an array of strings, irrespective of case
-func sorted(s []string) []string {
+func Sorted(s []string) []string {
 	sort.Slice(s, func(i, j int) bool {
 		return strings.ToLower(s[i]) < strings.ToLower(s[j])
 	})
@@ -197,7 +197,7 @@ var Config config = getConfig()
 type (
 	packageManager struct {
 		commands pmCommands
-		packages pkgs
+		Packages pkgGroup
 	}
 
 	pmCommands struct {
@@ -207,16 +207,19 @@ type (
 		updateCmd    string
 	}
 
-	pkgs map[string]map[string]map[string]string
+	pkgGroup map[string]pkgs
+
+	pkgs struct {
+		Description string
+		Packages    map[string]map[string]string
+	}
 )
 
 // Get a package by its name
-func (packages *pkgs) packageByName(name string) map[string]string {
-	for _, group := range *packages {
-		for pName, p := range group {
-			if pName == name {
-				return p
-			}
+func (p *pkgGroup) PackageByName(name string) map[string]string {
+	for _, group := range *p {
+		if pack, packInGroup := group.Packages[name]; packInGroup {
+			return pack
 		}
 	}
 	return map[string]string{}
@@ -225,7 +228,7 @@ func (packages *pkgs) packageByName(name string) map[string]string {
 // Get system install command for a given package
 func (pm *packageManager) installCmd(name string) string {
 	// Get package from packages.toml
-	pack := pm.packages.packageByName(name)
+	pack := pm.Packages.PackageByName(name)
 
 	// Check if pack has key "install_command" and return it if it does
 	if installCmd, ok := pack["install_command"]; ok {
@@ -244,7 +247,7 @@ func (pm *packageManager) installCmd(name string) string {
 // Get system uninstall command for a given package
 func (pm *packageManager) uninstallCmd(name string) string {
 	// Get package from packages.toml
-	pack := pm.packages.packageByName(name)
+	pack := pm.Packages.PackageByName(name)
 
 	// Check if pack has key "uninstall_command" and return it if it does
 	if installCmd, ok := pack["uninstall_command"]; ok {
@@ -270,13 +273,13 @@ type packageAction struct {
 func (pm *packageManager) packageInstallActions(packageGroupName string) []action {
 	// Sort packageNames by name, irrespective of case
 	var packageNames []string
-	for packageName := range pm.packages[packageGroupName] {
+	for packageName := range pm.Packages[packageGroupName].Packages {
 		packageNames = append(packageNames, packageName)
 	}
 
 	// Add package install commands
 	var packageActions []packageAction
-	for _, packageName := range sorted(packageNames) {
+	for _, packageName := range Sorted(packageNames) {
 		// Ignore description, as it's not a package
 		if packageName != "description" {
 			// Get install command for package and add to actions if it exists
@@ -284,7 +287,7 @@ func (pm *packageManager) packageInstallActions(packageGroupName string) []actio
 			if installCommand != "" {
 				// Get requirement for package
 				var requires string
-				if r, ok := pm.packages.packageByName(packageName)["requires"]; ok {
+				if r, ok := pm.Packages.PackageByName(packageName)["requires"]; ok {
 					requires = r
 				}
 
@@ -352,7 +355,7 @@ func getPackageManager() packageManager {
 	tomlText := download(Config.Metadata.BaseURL + "packages.toml")
 
 	// Unmarshal TOML file into struct
-	_, err := toml.Decode(string(tomlText), &pm.packages)
+	_, err := toml.Decode(string(tomlText), &pm.Packages)
 	if err != nil {
 		log.Fatal(err)
 	}

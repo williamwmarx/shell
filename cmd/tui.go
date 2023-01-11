@@ -271,7 +271,7 @@ func tui(tuiOptions map[string]bool) {
 	for _, v := range Config.Installers {
 		installers = append(installers, v.HelpMessage)
 	}
-	for _, i := range sorted(installers) {
+	for _, i := range Sorted(installers) {
 		items = append(items, item(i))
 	}
 
@@ -283,18 +283,18 @@ func tui(tuiOptions map[string]bool) {
 		message := "Temporarily " + strings.ToLower(hm[0]) + " " + strings.Join(hm[1:], " ")
 		temporaryInstallers = append(temporaryInstallers, message)
 	}
-	for _, ti := range sorted(temporaryInstallers) {
+	for _, ti := range Sorted(temporaryInstallers) {
 		items = append(items, item(ti))
 	}
 
 
 	// Add package groups to the list, sorted by name irrespective of case
 	var packageGroups []string
-	for packageGroup := range PM.packages {
+	for packageGroup := range PM.Packages {
 		packageGroups = append(packageGroups, packageGroup)
 	}
 
-	for _, packageGroup := range sorted(packageGroups) {
+	for _, packageGroup := range Sorted(packageGroups) {
 		items = append(items, item(packageGroup+" packages"))
 	}
 

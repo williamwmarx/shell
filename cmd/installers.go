@@ -130,12 +130,12 @@ func fullConfig() []action {
 	// Install packages
 	// Sort packages by group name, irrespective of case
 	var packageGroups []string
-	for group := range PM.packages {
+	for group := range PM.Packages {
 		packageGroups = append(packageGroups, group)
 	}
 
 	// Add package install actions and note requirements
-	for _, packageGroup := range sorted(packageGroups) {
+	for _, packageGroup := range Sorted(packageGroups) {
 		// Add packages actions
 		for _, pia := range PM.packageInstallActions(packageGroup) {
 			actions = append(actions, pia)
