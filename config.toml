@@ -1,0 +1,156 @@
+#######################
+##   Global config   ##
+#######################
+# Directory to install dotfiles in when --tmp invoked
+tmp_dir = "~/.@repo_name.tmp"
+custom_install_url = "https://marx.sh"
+help_description = "Install my default packages and dotfiles"
+
+
+####################
+##    Dotfiles	  ##
+####################
+# Git config files
+[sync.git]
+name = "Git"
+
+[[sync.git.targets]]
+description = "Git configuration"
+repo_path = "git/gitconfig"
+local_path = "~/.gitconfig"
+
+# GnuPG config files
+[sync.gnupg]
+name = "GnuPG"
+
+[[sync.gnupg.targets]]
+description = "GnuPG configuration"
+repo_path = "gnupg/gpg.conf"
+local_path = "~/.gnupg/gpg.conf"
+
+[[sync.gnupg.targets]]
+description = "GnuPG agent configuration"
+repo_path = "gnupg/gpg-agent.conf"
+local_path = "~/.gnupg/gpg-agent.conf"
+
+# Raycast shell scripts
+[sync.raycast]
+name = "Raycast"
+macos_only = true
+
+[[sync.raycast.targets]]
+description = "Strip formatting (while preserving whitespace) from clipboard"
+repo_path = "raycast/clear-format.sh"
+local_path = "~/.raycast/clear-format.sh"
+
+# skhd config files
+[sync.skhd]
+name = "skhd"
+macos_only = true
+
+[[sync.skhd.targets]]
+description = "Configure the hotkey daemon I use (mainly to manage Yabai)"
+repo_path = "skhd/skhdrc"
+local_path = "~/.skhdrc"
+
+# tmux config files
+[sync.tmux]
+name = "tmux"
+
+[[sync.tmux.targets]]
+description = "Clean UI, useful info only, Vim-like keybindings"
+repo_path = "tmux/tmux.conf"
+local_path = "~/.tmux.conf"
+
+# Vim config files
+[sync.vim]
+name = "Vim"
+
+[[sync.vim.targets]]
+description = "Vim configuration"
+repo_path = "vim/vimrc"
+local_path = "~/.vimrc"
+
+# Yabai config files
+[sync.yabai]
+name = "yabai"
+macos_only = true
+
+[[sync.yabai.targets]]
+description = "Manage yabai, the tiling window manager I use"
+repo_path = "yabai/yabairc"
+local_path = "~/.yabairc"
+
+# Zsh config files
+[sync.zsh]
+name = "Zsh"
+
+[[sync.zsh.targets]]
+description = "My go-to shell setup, leveraging Oh My Zsh (if available)"
+repo_path = "zsh/zshrc"
+local_path = "~/.zshrc"
+
+[[sync.zsh.targets]]
+description = "Useful aliases, built to work across all UNIX systems"
+repo_path = "zsh/aliases"
+local_path = "~/.aliases"
+
+[[sync.zsh.targets]]
+description = "Useful functions, built to work across all UNIX systems"
+repo_path = "zsh/functions"
+local_path = "~/.functions"
+
+[[sync.zsh.targets]]
+description = "A nice, clean theme with everything you need, and nothing more"
+repo_path = "zsh/t3.zsh-theme"
+local_path = "~/.oh-my-zsh/themes/t3.zsh-theme"
+
+
+####################
+##      tmux		  ##
+####################
+[installers.tmux]
+help_message = "Install tmux and config files"
+description = "Install [tmux](https://github.com/tmux/tmux) and [.tmux.conf](tmux/tmux.conf)"
+install = [
+	{msg = "Installing tmux", cmd = "@install tmux"},
+	{msg = "Saving tmux config", cmd = "@save tmux/tmux.conf"}
+]
+
+####################
+##      Vim 		  ##
+####################
+[installers.vim]
+help_message = "Install vim and config files"
+description = "Install [Vim](https://github.com/vim/vim), my [.vimrc](vim/vimrc), and [skeleton files](vim/templates)"
+install = [
+	{msg = "Installing Vim", cmd = "@install Vim"},
+	{msg = "Saving .vimrc", cmd = "@save vim/vimrc"},
+	{msg = "Saving template files", cmd = "@save vim/templates/*"},
+	{msg = "Installing Vim plugins", cmd = "vim +PlugInstall +qall"},
+]
+tmp_install = [
+	{msg = "Installing Vim", cmd = "@install Vim"},
+	{msg = "Saving .vimrc", cmd = "@save vim/vanilla_vimrc"},
+]
+
+####################
+##      Zsh 		  ##
+####################
+[installers.zsh]
+help_message = "Install Zsh and config files"
+description = "Install [Zsh](https://www.zsh.org/), [Oh-My-Zsh](https://ohmyz.sh/), [.zshrc](zsh/zshrc), [.aliases](zsh/aliases), [.functions](zsh/functions), and [Zsh theme](zsh/t3.zsh-theme)"
+install = [
+	{msg = "Installing Zsh", cmd = "@install Zsh"},
+	{msg = "Installing Oh My Zsh", cmd = "@install oh-my-zsh"},
+	{msg = "Saving .zshrc", cmd = "@save zsh/zshrc"},
+	{msg = "Saving .aliases", cmd = "@save zsh/aliases"},
+	{msg = "Saving .functions", cmd = "@save zsh/functions"},
+	{msg = "Saving Zsh themes", cmd = "@save zsh/*.zsh-theme"},
+]
+tmp_install = [
+	{msg = "Installing Zsh", cmd = "@install Zsh"},
+	{msg = "Saving .zshrc", cmd = "@save zsh/vanilla_zshrc"},
+	{msg = "Saving .aliases", cmd = "@save zsh/aliases"},
+	{msg = "Saving .functions", cmd = "@save zsh/functions"},
+]

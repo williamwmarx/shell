@@ -61,19 +61,3 @@ export MANPAGER="vim -M +MANPAGER --not-a-term -"
 setopt inc_append_history_time  # Put time in history so we can see how long it takes things to run
 source $HOME/.aliases
 source $HOME/.functions
-
-# ---------------------------- Launch tmux on start ---------------------------
-if [[ `which tmux &>/dev/null && echo "$?"` -eq 0 ]]; then
-	# First session named "main". Others named alt0, alt1, alt2, ...
-	if [[ -z "$TMUX" ]]; then
-		LASTSESSION=`tmux ls 2>/dev/null | awk -F":" '{print $1}' | sort | tail -2 | head -1`
-		if [[ $LASTSESSION == main ]]; then
-			tmux new -s alt0
-		elif [[ $LASTSESSION == alt* ]]; then
-			NUMBER=$(( 10#$(echo $LASTSESSION | grep -Eo '\d+') + 1 ))
-			tmux new -s alt$NUMBER
-		else
-			tmux new -s main
-		fi
-	fi
-fi

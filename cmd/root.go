@@ -1,56 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 )
-
-// Potential install options
-type Options struct {
-	full       bool
-	tmp        bool
-	tmux       bool
-	vim        bool
-	zsh        bool
-	vanillaVim bool
-	vanillaZsh bool
-}
-
-func runRoot(options Options) {
-	// Options to pass to TUI
-	tuiOptions := []string{}
-	// Install tmux?
-	if options.tmux {
-		if options.tmp {
-			tuiOptions = append(tuiOptions, "tmux temporary")
-		} else {
-			tuiOptions = append(tuiOptions, "tmux")
-		}
-	}
-	// Install vim?
-	if options.vim && options.tmp {
-		tuiOptions = append(tuiOptions, "vanilla-vim temporary")
-	} else if options.vanillaVim {
-		tuiOptions = append(tuiOptions, "vanilla-vim")
-	} else if options.vim {
-		tuiOptions = append(tuiOptions, "vim")
-	}
-	// Install zsh?
-	if options.zsh && options.tmp {
-		tuiOptions = append(tuiOptions, "vanilla-zsh temporary")
-	} else if options.vanillaZsh {
-		tuiOptions = append(tuiOptions, "vanilla-zsh")
-	} else if options.zsh {
-		tuiOptions = append(tuiOptions, "zsh")
-	}
-	// Full system config?
-	if options.full {
-		tuiOptions = []string{"full"} // Overwrite any other options
-	}
-	tui(tuiOptions)
-}
 
 // Check if a flag is present
 func flagPresent(cmd *cobra.Command, flagName string) bool {
@@ -63,19 +19,17 @@ func flagPresent(cmd *cobra.Command, flagName string) bool {
 
 // Cobra root command — this is the entrypoint for the CLI
 var rootCmd = &cobra.Command{
-	Use:   "sh <(curl https://marx.sh)",
-	Short: "Install my default packages and dotfiles",
+	Use:   fmt.Sprintf("sh <(curl %s) [flags]", Config.InstallURL),
+	Short: Config.HelpDescription,
 	Run: func(cmd *cobra.Command, args []string) {
-		options := Options{
-			full:       flagPresent(cmd, "full"),
-			tmp:        flagPresent(cmd, "tmp"),
-			tmux:       flagPresent(cmd, "tmux"),
-			vim:        flagPresent(cmd, "vim"),
-			vanillaVim: flagPresent(cmd, "vanilla-vim"),
-			zsh:        flagPresent(cmd, "zsh"),
-			vanillaZsh: flagPresent(cmd, "vanilla-zsh"),
+		options := map[string]bool{
+			"tmp":  flagPresent(cmd, "tmp"),
+			"full": flagPresent(cmd, "full"),
 		}
-		runRoot(options)
+		for k := range Config.Installers {
+			options[k] = flagPresent(cmd, k)
+		}
+		tui(options)
 	},
 }
 
@@ -89,11 +43,17 @@ func Execute() {
 
 // Add flags to the root command
 func init() {
-	rootCmd.Flags().BoolP("full", "", false, "Full system config")
-	rootCmd.Flags().BoolP("tmp", "", false, "Only temporarily install selection(s)")
-	rootCmd.Flags().BoolP("tmux", "", false, "Install tmux and configuration files")
-	rootCmd.Flags().BoolP("vim", "", false, "Install vim and configuration files")
-	rootCmd.Flags().BoolP("vanilla-vim", "", false, "Install vim and configuration files without plugins")
-	rootCmd.Flags().BoolP("zsh", "", false, "Install zsh and configuration files")
-	rootCmd.Flags().BoolP("vanilla-zsh", "", false, "Install zsh and configuration files without plugins")
+	// Update default help message
+	rootCmd.Flags().BoolP("help", "h", false, "Show this help message")
+
+	// Add flag for temporary install
+	rootCmd.Flags().BoolP("tmp", "", false, "Install temporarily to "+Config.TmpDir)
+
+	// Add flag for full install
+	rootCmd.Flags().BoolP("full", "", false, "Full shell config")
+
+	// Add flags for all installers
+	for flag, v := range Config.Installers {
+		rootCmd.Flags().BoolP(flag, "", false, v.HelpMessage)
+	}
 }

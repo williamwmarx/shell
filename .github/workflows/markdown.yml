@@ -1,0 +1,26 @@
+name: Build markdown files
+
+on: push
+
+jobs:
+  markdown-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.0'
+
+      - name: Build
+        run: go run assembly/main.go
+
+      - name: Git commit and push files
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "<>"
+          git add -A
+          git commit -m "Markdown build $(date)"
+          git push -u origin HEAD
