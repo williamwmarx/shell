@@ -16,3 +16,11 @@ jobs:
 
       - name: Build
         run: go run assembly/main.go
+
+      - name: Git commit and push files
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "<>"
+          git add -a
+          git commit -m "Markdown build $(date)"
+          git push -u origin HEAD
