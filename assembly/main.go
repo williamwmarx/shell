@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/williamwmarx/shell/cmd"
@@ -58,7 +57,7 @@ func writeREADME() {
 	var packages []string
 	for packageGroup := range cmd.PM.Packages {
 		header := fmt.Sprintf("### %s\n\n", packageGroup)
-		header += cmd.PM.Packages[packageGroup].Description + "\n"
+		header += cmd.PM.Packages[packageGroup].Description + "\n\n"
 		var pgPackages []string
 		for pName, p := range cmd.PM.Packages[packageGroup].Packages {
 			pgPackages = append(pgPackages, fmt.Sprintf("- [%s](%s) - %s\n", pName, p["url"], p["description"]))
@@ -81,47 +80,44 @@ func writeINSTALL() {
 	markdown = strings.ReplaceAll(markdown, "%INSTALL_URL%", cmd.Config.InstallURL)
 
 	// Get installers and sort by name
-	installers := cmd.Config.Installers
 	var installerNames []string
-	for k := range installers {
+	for k := range cmd.Config.Installers {
 		installerNames = append(installerNames, k)
 	}
-	sort.Strings(installerNames)
 
 	// Add installers to markdown
-	for _, in := range installerNames {
+	var installers []string
+	for _, inst := range installerNames {
 		// Title and description
-		markdown += fmt.Sprintf("#### %s\n%s\n", in, installers[in].Description)
+		instText := fmt.Sprintf("#### %s\n\n%s\n\n", inst, cmd.Config.Installers[inst].Description)
 		// Code block
-		markdown += fmt.Sprintf("```bash\nsh <(curl %s) --%s\n```\n", cmd.Config.InstallURL, in)
-		// Extra line break
-		markdown += "\n"
+		instText += fmt.Sprintf("```bash\nsh <(curl %s) --%s\n```\n\n", cmd.Config.InstallURL, inst)
+		installers = append(installers, instText)
 	}
 
+	// Replace %PARTIAL_INSTALL% with installers
+	partialInstall := strings.TrimSpace(strings.Join(cmd.Sorted(installers), ""))
+	markdown = strings.ReplaceAll(markdown, "%PARTIAL_INSTALL%", partialInstall)
+
 	// Tempoarary install explanation
-	tmp_explanation := "### Temporary install\nSometimes, you only need your dotfiles " +
-		"temporarily. For example, say you're editing some code on a friend's machine. " +
-		"You could slowly go through it with their editor, or you could load up your vim " +
-		"config and fly through their code. This is where the `--tmp` flag comes in. You " +
-		"can use the `--tmp` flag with "
-	// Add installers flags
+	var tmpFlags string
 	for i, name := range installerNames {
 		switch i {
 		case 0:
-			tmp_explanation += fmt.Sprintf("`--%s`", name)
+			tmpFlags += fmt.Sprintf("`--%s`", name)
 		case len(installerNames) - 1:
-			tmp_explanation += fmt.Sprintf(", or `--%s`", name)
+			tmpFlags += fmt.Sprintf(", or `--%s`", name)
 		default:
-			tmp_explanation += fmt.Sprintf(", `--%s`", name)
+			tmpFlags += fmt.Sprintf(", `--%s`", name)
 		}
 	}
-	tmp_explanation += ". It will install the packages, download necessary dotfiles into " +
-		"the `TMP_DIR` directory, and add the shell script `TMP_DIR/uninstall.sh` which " +
-		"will uninstall any packages you installed and remove the `TMP_DIR` directory. " +
-		"Temporary install will look for the “vanilla” versions of synced dotfiles, where " +
-		"possible."
+
+	// Replace %TMP_FLAGS% with tmpFlags
+	markdown = strings.ReplaceAll(markdown, "%TMP_FLAGS%", tmpFlags)
+
+	// Replace %TMP_DIR% with tmp_dir
 	tmp_dir := strings.ReplaceAll(cmd.Config.TmpDir, "@repo_name", cmd.Config.Metadata.Repo)
-	markdown += strings.ReplaceAll(tmp_explanation, "TMP_DIR", tmp_dir)
+	markdown = strings.ReplaceAll(markdown, "%TMP_DIR%", tmp_dir)
 
 	// Write markdown to INSTALL.md
 	writeString("INSTALL.md", markdown)
