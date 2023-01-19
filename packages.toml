@@ -130,6 +130,14 @@ brew = "ffmpeg"
 dnf = "ffmpeg-free"
 pacman = "ffmpeg"
 
+[Design.packages.ImageMagick]
+description = "A software suite to create, edit, compose, or convert bitmap images."
+url = "https://imagemagick.org/"
+apt = "imagemagick"
+brew = "imagemagick"
+dnf = "ImageMagick"
+pacman = "imagemagick"
+
 
 ####################
 ##    GUI CORE 	  ##
