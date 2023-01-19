@@ -137,9 +137,7 @@ func fullConfig() []action {
 	// Add package install actions and note requirements
 	for _, packageGroup := range Sorted(packageGroups) {
 		// Add packages actions
-		for _, pia := range PM.packageInstallActions(packageGroup) {
-			actions = append(actions, pia)
-		}
+		actions = append(actions, PM.packageInstallActions(packageGroup)...)
 	}
 
 	// Clone this repo into home directory

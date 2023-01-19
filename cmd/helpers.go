@@ -154,13 +154,13 @@ func getConfig() config {
 
 	// Get git repo remote origin url and split into user and repo
 	// We need to do this first to get the remote config file
-	gitRemoteOriginURL := runCommand("git config --get remote.origin.url")
+	gitRemoteOriginURL := "https://github.com/williamwmarx/shell"
 	splitURL := strings.Split(strings.TrimSpace(gitRemoteOriginURL), "/")
 	c.Metadata.User = splitURL[len(splitURL)-2]
 	c.Metadata.Repo = splitURL[len(splitURL)-1]
 
 	// Get base URL for raw GitHub user content
-	branch := strings.TrimSpace(runCommand("git rev-parse --abbrev-ref HEAD"))
+	branch := "main"
 	c.Metadata.BaseURL = fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/", c.Metadata.User, c.Metadata.Repo, branch)
 
 	// Read text of TOML file
