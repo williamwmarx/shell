@@ -87,6 +87,7 @@ Core packages I use daily
 Packages for visual and sound design.
 
 - [FFmpeg](https://ffmpeg.org/) - A complete, cross-platform solution to record, convert and stream audio and video.
+- [ImageMagick](https://imagemagick.org/) - A software suite to create, edit, compose, or convert bitmap images.
 
 ### GUI Core
 
