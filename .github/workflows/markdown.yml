@@ -19,8 +19,10 @@ jobs:
 
       - name: Git commit and push files
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "<>"
-          git add -A
-          git commit -m "Markdown build $(date)"
-          git push -u origin HEAD
+          if [ -n $(git status --porcelain) ]; then
+            git config --global user.name "GitHub Actions Bot"
+            git config --global user.email "<>"
+            git add -A
+            git commit -m "Markdown build $(date)"
+            git push -u origin HEAD
+          fi
