@@ -54,8 +54,8 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	fn := itemStyle.Render
 	if index == m.Index() {
-		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
+		fn = func(s ...string) string {
+			return selectedItemStyle.Render("> " + strings.Join(s, ""))
 		}
 	}
 
@@ -286,7 +286,6 @@ func tui(tuiOptions map[string]bool) {
 	for _, ti := range Sorted(temporaryInstallers) {
 		items = append(items, item(ti))
 	}
-
 
 	// Add package groups to the list, sorted by name irrespective of case
 	var packageGroups []string
