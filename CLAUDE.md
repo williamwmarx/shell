@@ -38,13 +38,23 @@ go build
 ./shell
 
 # Build for release (cross-platform)
-go build -o shell-config-$(uname -s)-$(uname -m)
+make build  # outputs to releases/
+
+# Test in Docker (Linux environment)
+make test -- --zsh
+make test -- --vim --tmux
+
+# Regenerate README.md and INSTALL.md from templates
+go run assembly/main.go
+
+# Format code before committing
+gofmt -s -w .
 ```
 
 ## Installation Flow
 
-1. User runs `sh <(curl https://marx.sh)` which downloads and executes `install.sh`
-2. `install.sh` fetches the pre-built binary for the user's platform from releases
+1. User runs `sh <(curl https://marx.sh)` which downloads and executes `install.sh` (via Cloudflare Worker)
+2. `install.sh` fetches the pre-built binary for the user's platform from GitHub Releases
 3. The binary presents either:
    - Interactive TUI (default)
    - Non-interactive installation with flags (`--vim`, `--tmux`, `--zsh`, `--full`)

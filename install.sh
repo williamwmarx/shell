@@ -3,7 +3,7 @@ OS=`uname -s`
 ARCH=`uname -m`
 
 if [ ${OS} = Darwin ] || [ ${OS} = Linux ]; then
-	curl -s https://releases.marx.sh/shell-config-${OS}-${ARCH} -o $HOME/shell-config
+	curl -sL https://github.com/williamwmarx/shell/releases/download/latest/shell-config-${OS}-${ARCH} -o $HOME/shell-config
 	chmod +x $HOME/shell-config
 	$HOME/shell-config $@
 	rm $HOME/shell-config
