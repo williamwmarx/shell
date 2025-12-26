@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -21,11 +23,8 @@ jobs:
         run: make
 
       - name: Deploy
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --follow-symlinks
+        run: |
+          gh release delete latest --yes || true
+          gh release create latest releases/* --title "Latest" --notes "Auto-updated on push to main"
         env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: 'releases'
+          GH_TOKEN: ${{ github.token }}
