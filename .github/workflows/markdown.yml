@@ -1,10 +1,16 @@
 name: Build markdown files
 
-on: push
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   markdown-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -17,12 +23,18 @@ jobs:
       - name: Build
         run: go run assembly/main.go
 
-      - name: Git commit and push files
+      - name: Create PR for markdown changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
+            BRANCH="docs/markdown-update-$(date +%s)"
             git config --global user.name "GitHub Actions Bot"
             git config --global user.email "<>"
+            git checkout -b "$BRANCH"
             git add -A
-            git commit -m "Markdown build $(date)"
-            git push -u origin HEAD
+            git commit -m "docs: update generated markdown"
+            git push -u origin "$BRANCH"
+            gh pr create --title "docs: update generated markdown" --body "Auto-generated markdown update" --head "$BRANCH" --base main
+            gh pr merge --auto --squash
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
