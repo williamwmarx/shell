@@ -48,7 +48,7 @@ sh <(curl https://marx.sh) --zsh
 Sometimes, you only need your dotfiles temporarily. For example, say you're editing some code on a
 friend's machine. You could slowly go through it with their editor, or you could load up your vim
 config and fly through their code. This is where the `--tmp` flag comes in. You can use the `--tmp`
-flag with `--tmux`, `--vim`, or `--zsh`. It will install the packages, download necessary dotfiles into the
+flag with `--vim`, `--zsh`, or `--tmux`. It will install the packages, download necessary dotfiles into the
 `~/.shell.tmp` directory, and add the shell script `~/.shell.tmp/uninstall.sh` which will uninstall any
 packages you installed and remove the `~/.shell.tmp` directory. Temporary install will look for the
 “vanilla” versions of synced dotfiles, where possible.
